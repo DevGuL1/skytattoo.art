@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% load static translate_tags %}
+
+{% block title %}{{ artist.name }} — {{ site.site_name }}{% endblock %}
+{% block meta_description %}{% db_trans artist "tagline" as tag %}{{ tag|default:artist.name }} — {% static_trans "tattoo artist at Skytattoo.art." %}{% endblock %}
+
+{% block content %}
+<!-- ░░ COVER / PROFILE HEADER ░░ -->
+<section class="relative">
+  <div class="h-64 md:h-96 w-full overflow-hidden bg-char">
+    {% if artist.cover_image %}
+      <img src="{{ artist.cover_image.url }}" alt="" class="w-full h-full object-cover opacity-70" />
+    {% else %}
+      <div class="w-full h-full bg-gradient-to-br from-blood/40 via-char to-ink"></div>
+    {% endif %}
+    <div class="absolute inset-0 bg-gradient-to-t from-ink to-transparent"></div>
+  </div>
+
+  <div class="max-w-6xl mx-auto px-5">
+    <div class="-mt-20 md:-mt-24 flex flex-col md:flex-row md:items-end gap-6 relative z-10">
+      <div class="h-40 w-40 md:h-48 md:w-48 rounded-full border-4 border-ink overflow-hidden bg-char shrink-0 shadow-2xl">
+        {% if artist.avatar %}
+          <img src="{{ artist.avatar.url }}" alt="{{ artist.name }}" class="w-full h-full object-cover" />
+        {% else %}
+          <div class="w-full h-full flex items-center justify-center font-gothic text-6xl text-neutral-700">{{ artist.name|first }}</div>
+        {% endif %}
+      </div>
+      <div class="flex-1 pb-2">
+        <h1 class="font-gothic text-4xl md:text-5xl text-neutral-100">{{ artist.name }}</h1>
+        <p class="text-sm uppercase tracking-widest text-blood mt-1">{% db_trans artist "role" %}</p>
+        {% if artist.tagline %}<p class="text-neutral-400 mt-2">{% db_trans artist "tagline" %}</p>{% endif %}
+      </div>
+      <div class="flex gap-3 pb-3">
+        {% if artist.instagram %}<a href="{{ artist.instagram }}" class="social" target="_blank" rel="noopener">IG</a>{% endif %}
+        {% if artist.facebook %}<a href="{{ artist.facebook }}" class="social" target="_blank" rel="noopener">FB</a>{% endif %}
+        {% if artist.tiktok %}<a href="{{ artist.tiktok }}" class="social" target="_blank" rel="noopener">TT</a>{% endif %}
+        <a href="{% url 'core:book' %}?artist={{ artist.pk }}" class="btn-blood text-xs !py-2 !px-4">{% static_trans "Book Now" %}</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ ABOUT + INFO ░░ -->
+<section class="max-w-6xl mx-auto px-5 py-14">
+  <div class="grid lg:grid-cols-3 gap-10">
+    <div class="lg:col-span-2 reveal">
+      <h2 class="eyebrow mb-4">{% static_trans "About" %} {{ artist.name }}</h2>
+      <p class="text-neutral-300 leading-relaxed whitespace-pre-line text-lg">{% db_trans artist "bio" as bio %}{{ bio|default:"—" }}</p>
+      {% if artist.styles.all %}
+      <div class="mt-8">
+        <h3 class="eyebrow mb-3">{% static_trans "Styles" %}</h3>
+        <div class="flex flex-wrap gap-2">
+          {% for s in artist.styles.all %}<span class="filter-chip !cursor-default">{% db_trans s "name" %}</span>{% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Info card -->
+    <aside class="reveal">
+      <div class="ink-card p-6">
+        <div class="grid grid-cols-2 divide-x divide-char text-center">
+          <div class="px-2">
+            <p class="font-gothic text-4xl text-gold leading-none">{{ items|length }}</p>
+            <p class="text-[.65rem] uppercase tracking-widest text-neutral-500 mt-2">{% static_trans "Portfolio" %}</p>
+          </div>
+          <div class="px-2">
+            <p class="font-gothic text-4xl text-gold leading-none">{{ artist.styles.count }}</p>
+            <p class="text-[.65rem] uppercase tracking-widest text-neutral-500 mt-2">{% static_trans "Styles" %}</p>
+          </div>
+        </div>
+
+        <div class="border-t border-char mt-6 pt-6 space-y-4 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-neutral-500">{% static_trans "Role" %}</span>
+            <span class="text-neutral-200">{% db_trans artist "role" %}</span>
+          </div>
+          {% if artist.email %}
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-neutral-500">{% static_trans "Email" %}</span>
+            <a href="mailto:{{ artist.email }}" class="text-gold hover:underline truncate">{{ artist.email }}</a>
+          </div>
+          {% endif %}
+        </div>
+
+        <a href="{% url 'core:book' %}?artist={{ artist.pk }}" class="btn-blood w-full text-center mt-6 !px-4">{% static_trans "Book Now" %}</a>
+
+        {% if artist.instagram or artist.facebook or artist.tiktok %}
+        <div class="flex justify-center gap-3 mt-5">
+          {% if artist.instagram %}<a href="{{ artist.instagram }}" class="social" target="_blank" rel="noopener">IG</a>{% endif %}
+          {% if artist.facebook %}<a href="{{ artist.facebook }}" class="social" target="_blank" rel="noopener">FB</a>{% endif %}
+          {% if artist.tiktok %}<a href="{{ artist.tiktok }}" class="social" target="_blank" rel="noopener">TT</a>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ░░ PORTFOLIO ░░ -->
+<section class="max-w-6xl mx-auto px-5 pb-20">
+  <div class="flex flex-col items-center text-center mb-8 reveal">
+    <p class="eyebrow mb-2">{% static_trans "Latest Ink" %}</p>
+    <h2 class="section-title text-3xl md:text-4xl text-neutral-100">{% static_trans "Portfolio" %}</h2>
+    <div class="rule mt-5"></div>
+  </div>
+
+  {% if items %}
+    {% if styles %}
+    <div class="flex flex-wrap justify-center gap-2 mb-8" data-filter-group>
+      <button class="filter-chip is-active" data-filter="*">{% static_trans "All" %}</button>
+      {% for s in styles %}
+        <button class="filter-chip" data-filter=".{{ s.slug }}">{% db_trans s "name" %}</button>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" data-pf-grid>
+      {% for item in items %}
+        <a href="{{ item.get_absolute_url }}"
+           class="pf-item ink-card block aspect-square {{ item.style_slugs }}">
+          <img src="{{ item.image.url }}" alt="{% db_trans item 'title' %}" class="w-full h-full object-cover" loading="lazy" />
+          <div class="overlay">
+            <h3 class="font-display text-neutral-100 text-xs">{% db_trans item "title" %}</h3>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-center text-neutral-500">{% static_trans "Portfolio coming soon" %}.</p>
+  {% endif %}
+</section>
+
+<!-- ░░ SOCIAL FEED ░░ -->
+{% if artist.social_posts.all %}
+<section class="border-t border-char bg-coal/40">
+  <div class="max-w-6xl mx-auto px-5 py-16">
+    <div class="flex flex-col items-center text-center mb-10 reveal">
+      <p class="eyebrow mb-2">{% static_trans "Follow the Ink" %}</p>
+      <h2 class="section-title text-3xl md:text-4xl text-neutral-100">{% static_trans "Social Feed" %}</h2>
+      <div class="rule mt-5"></div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+      {% for post in artist.social_posts.all %}
+        <div class="ink-card p-3 bg-black/60 overflow-hidden">
+          {% if post.is_tiktok %}
+            <blockquote class="tiktok-embed" cite="{{ post.url }}" data-video-id="{{ post.tiktok_id }}"
+                        style="max-width:100%;min-width:280px;margin:0;">
+              <a href="{{ post.url }}" target="_blank" rel="noopener" class="text-gold text-sm">View on TikTok ↗</a>
+            </blockquote>
+          {% elif post.is_instagram %}
+            <blockquote class="instagram-media" data-instgrm-permalink="{{ post.url }}" data-instgrm-version="14"
+                        style="width:100%;margin:0;background:#000;border:0;">
+              <a href="{{ post.url }}" target="_blank" rel="noopener" class="text-gold text-sm">View on Instagram ↗</a>
+            </blockquote>
+          {% else %}
+            <a href="{{ post.url }}" target="_blank" rel="noopener" class="block p-6 text-center text-gold">View post ↗</a>
+          {% endif %}
+          {% if post.caption %}<p class="text-sm text-neutral-400 mt-2 px-1">{{ post.caption }}</p>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-4 mt-10">
+      {% if artist.instagram %}<a href="{{ artist.instagram }}" target="_blank" rel="noopener" class="btn-gold">{% static_trans "Follow on Instagram" %}</a>{% endif %}
+      {% if artist.tiktok %}<a href="{{ artist.tiktok }}" target="_blank" rel="noopener" class="btn-blood">{% static_trans "Follow on TikTok" %}</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ░░ VIDEO REELS ░░ -->
+{% if artist.reels.all %}
+<section class="border-t border-char bg-coal/40">
+  <div class="max-w-6xl mx-auto px-5 py-16">
+    <div class="flex flex-col items-center text-center mb-10 reveal">
+      <p class="eyebrow mb-2">{% static_trans "In Motion" %}</p>
+      <h2 class="section-title text-3xl md:text-4xl text-neutral-100">{% static_trans "Video Reels" %}</h2>
+      <div class="rule mt-5"></div>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" data-reveal-grid>
+      {% for reel in artist.reels.all %}
+        <div class="ink-card overflow-hidden">
+          <div class="aspect-video bg-black">
+            <iframe class="w-full h-full" src="{{ reel.embed_url }}" title="{{ reel.title }}"
+                    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen loading="lazy"></iframe>
+          </div>
+          {% if reel.title %}<p class="p-4 text-sm text-neutral-200 font-display">{{ reel.title }}</p>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ░░ CLOSING CTA ░░ -->
+<section class="max-w-4xl mx-auto px-5 py-20 text-center reveal">
+  <h2 class="font-gothic text-4xl md:text-5xl text-neutral-100">{% static_trans "Ready for your next piece?" %}</h2>
+  <p class="mt-4 text-neutral-400">{% static_trans "Book a consultation with one of our artists and let's design something eternal." %}</p>
+  <a href="{% url 'core:book' %}?artist={{ artist.pk }}" class="btn-gold mt-8">{% static_trans "Book Appointment" %}</a>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+{% if artist.social_posts.all %}
+<script async src="https://www.instagram.com/embed.js"></script>
+<script async src="https://www.tiktok.com/embed.js"></script>
+{% endif %}
+{% if items and styles %}
+<script>
+  (function () {
+    var grid = document.querySelector("[data-pf-grid]");
+    if (!grid) return;
+    var items = Array.prototype.slice.call(grid.querySelectorAll(".pf-item"));
+    var HIDE_MS = 400;
+    document.querySelectorAll("[data-filter-group] .filter-chip").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll("[data-filter-group] .filter-chip").forEach(function (b) {
+          b.classList.remove("is-active");
+        });
+        btn.classList.add("is-active");
+        var f = btn.getAttribute("data-filter");
+        items.forEach(function (el) {
+          var match = f === "*" || el.matches(f);
+          clearTimeout(el._t);
+          if (match) {
+            if (el.style.display === "none") { el.style.display = ""; void el.offsetHeight; }
+            el.classList.remove("pf-hide");
+          } else {
+            el.classList.add("pf-hide");
+            el._t = setTimeout(function () { el.style.display = "none"; }, HIDE_MS);
+          }
+        });
+      });
+    });
+  })();
+</script>
+{% endif %}
+{% endblock %}

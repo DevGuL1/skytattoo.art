@@ -1,0 +1,7 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<div class="dashboard-card">
+    <div class="d-flex justify-content-between align-items-center mb-3"><h2 class="mb-0">Portfolio</h2><a href="{% url 'dashboard_portfolio_item_create' %}" class="btn btn-primary">Add item</a></div>
+    <div class="table-responsive"><table class="table table-dark align-middle"><thead><tr><th>Image</th><th>Title</th><th>Artist</th><th>Category</th><th></th></tr></thead><tbody>{% for item in items %}<tr><td><img src="{{ item.image_url }}" alt="" style="width:70px;height:70px;object-fit:cover;border-radius:12px;"></td><td>{{ item.title_en }}</td><td>{{ item.artist.full_name }}</td><td>{{ item.category.title_en }}</td><td><a href="{% url 'dashboard_portfolio_item_edit' item.pk %}" class="btn btn-sm btn-outline-light">Edit</a></td></tr>{% empty %}<tr><td colspan="5">No portfolio items found.</td></tr>{% endfor %}</tbody></table></div>
+</div>
+{% endblock %}

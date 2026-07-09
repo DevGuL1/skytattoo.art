@@ -1,0 +1,26 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-md-4"><div class="dashboard-card"><div class="dashboard-metric">{{ portfolio_count }}</div><p>Portfolio items</p></div></div>
+    <div class="col-md-4"><div class="dashboard-card"><div class="dashboard-metric">{{ artist_count }}</div><p>Artists</p></div></div>
+    <div class="col-md-4"><div class="dashboard-card"><div class="dashboard-metric">{{ service_count }}</div><p>Services</p></div></div>
+</div>
+<div class="row">
+    <div class="col-md-4"><div class="dashboard-card"><div class="dashboard-metric">{{ hero_slide_count }}</div><p>Hero slides</p></div></div>
+</div>
+<div class="dashboard-card">
+    <div class="d-flex justify-content-between align-items-center mb-3"><h3 class="mb-0">Recent work</h3><a href="{% url 'dashboard_portfolio_item_create' %}" class="btn btn-primary">Add item</a></div>
+    <div class="table-responsive">
+        <table class="table table-dark dashboard-table align-middle">
+            <thead><tr><th>Image</th><th>Title</th><th>Artist</th><th>Category</th><th></th></tr></thead>
+            <tbody>
+                {% for item in recent_items %}
+                <tr><td><img src="{{ item.image_url }}" alt=""></td><td>{{ item.title_en }}</td><td>{{ item.artist.full_name }}</td><td>{{ item.category.title_en }}</td><td><a href="{% url 'dashboard_portfolio_item_edit' item.pk %}" class="btn btn-sm btn-outline-light">Edit</a></td></tr>
+                {% empty %}
+                <tr><td colspan="5">No items yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

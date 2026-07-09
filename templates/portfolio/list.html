@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static translate_tags %}
+
+{% block title %}{% static_trans "Portfolio" %} — {{ site.site_name }}{% endblock %}
+{% block meta_description %}{% static_trans "Explore the Skytattoo.art studio portfolio — blackwork, realism, minimal and gothic tattoos, filterable by style, colour and size." %}{% endblock %}
+
+{% block content %}
+<section class="pt-36 pb-12 text-center px-5">
+  <p class="eyebrow mb-4">{% static_trans "Studio Works" %}</p>
+  <h1 class="section-title text-5xl md:text-6xl text-neutral-100">{% static_trans "Portfolio" %}</h1>
+  <div class="rule mx-auto mt-6"></div>
+</section>
+
+<section class="max-w-7xl mx-auto px-5 pb-24">
+  {% if items %}
+  <!-- Filters -->
+  <div class="flex flex-col items-center gap-4 mb-10">
+    <div class="flex flex-wrap justify-center gap-2" data-filter-group="style">
+      <button class="filter-chip is-active" data-filter="*">{% static_trans "All Styles" %}</button>
+      {% for s in styles %}
+        <button class="filter-chip" data-filter=".{{ s.slug }}" id="{{ s.slug }}">{% db_trans s "name" %}</button>
+      {% endfor %}
+    </div>
+    <div class="flex flex-wrap justify-center gap-2" data-filter-group="color">
+      <button class="filter-chip is-active" data-filter="*">{% static_trans "All" %}</button>
+      {% for value, label in colors %}
+        <button class="filter-chip" data-filter=".c-{{ value }}">{{ label }}</button>
+      {% endfor %}
+      {% for value, label in sizes %}
+        <button class="filter-chip" data-filter=".s-{{ value }}">{{ label }}</button>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Masonry grid via CSS multi-columns (robust + responsive; no JS layout).
+       Filtering is handled by pf-filter.js which fades items in/out. -->
+  <div class="pf-grid columns-2 sm:columns-3 lg:columns-4 gap-4" data-pf-grid>
+    {% for item in items %}
+      <a href="{{ item.get_absolute_url }}"
+         class="pf-item ink-card block mb-4 break-inside-avoid {{ item.style_slugs }} c-{{ item.color }} s-{{ item.size }}">
+        <img src="{{ item.image.url }}" alt="{% db_trans item 'title' %}" class="w-full object-cover" loading="lazy" />
+        <div class="overlay">
+          <span class="font-display text-gold text-[0.65rem] uppercase tracking-widest">
+            {% for s in item.styles.all %}{% db_trans s "name" %}{% if not forloop.last %} · {% endif %}{% endfor %}
+          </span>
+          <h3 class="font-display text-neutral-100 text-sm mt-1">{% db_trans item "title" %}</h3>
+          {% if item.artist %}<p class="text-neutral-400 text-xs">{% static_trans "by" %} {{ item.artist.name }}</p>{% endif %}
+        </div>
+      </a>
+    {% endfor %}
+    <p class="pf-empty hidden text-center text-neutral-500 py-10">{% static_trans "No work matches these filters." %}</p>
+  </div>
+  {% else %}
+    <p class="text-center text-neutral-500">{% static_trans "Portfolio coming soon" %}.</p>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% if items %}
+<script>
+  (function () {
+    var grid = document.querySelector("[data-pf-grid]");
+    if (!grid) return;
+    var items = Array.prototype.slice.call(grid.querySelectorAll(".pf-item"));
+    var empty = grid.querySelector(".pf-empty");
+
+    // Two independent filter dimensions combined with AND: style + colour/size.
+    var filters = { style: "*", color: "*" };
+    var HIDE_MS = 400; // keep in sync with the .pf-item transition in gothic.css
+
+    function apply() {
+      var shown = 0;
+      items.forEach(function (el) {
+        var okStyle = filters.style === "*" || el.matches(filters.style);
+        var okColor = filters.color === "*" || el.matches(filters.color);
+        var match = okStyle && okColor;
+        clearTimeout(el._pfTimer);
+        if (match) {
+          shown++;
+          if (el.style.display === "none") {
+            el.style.display = "";       // re-enter layout…
+            void el.offsetHeight;         // …force reflow so the fade-in animates
+          }
+          el.classList.remove("pf-hide");
+        } else {
+          el.classList.add("pf-hide");   // fade + scale out
+          el._pfTimer = setTimeout(function () {
+            el.style.display = "none";    // then collapse out of the column flow
+          }, HIDE_MS);
+        }
+      });
+      if (empty) empty.classList.toggle("hidden", shown !== 0);
+    }
+
+    document.querySelectorAll("[data-filter-group]").forEach(function (group) {
+      var key = group.getAttribute("data-filter-group");
+      group.querySelectorAll(".filter-chip").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          group.querySelectorAll(".filter-chip").forEach(function (b) {
+            b.classList.remove("is-active");
+          });
+          btn.classList.add("is-active");
+          filters[key] = btn.getAttribute("data-filter");
+          apply();
+        });
+      });
+    });
+
+    // Deep-link: /portfolio/#blackwork pre-selects a style filter.
+    if (window.location.hash) {
+      var target = document.querySelector(
+        '[data-filter-group="style"] [data-filter=".' + window.location.hash.slice(1) + '"]'
+      );
+      if (target) target.click();
+    }
+  })();
+</script>
+{% endif %}
+{% endblock %}

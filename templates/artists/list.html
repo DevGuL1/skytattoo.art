@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static translate_tags %}
+
+{% block title %}{% static_trans "Artists" %} — {{ site.site_name }}{% endblock %}
+{% block meta_description %}{% static_trans "Meet the tattoo artists of Skytattoo.art — resident masters of blackwork, realism, minimal and gothic ink." %}{% endblock %}
+
+{% block content %}
+<section class="pt-36 pb-16 text-center px-5">
+  <p class="eyebrow mb-4">{% static_trans "The Coven" %}</p>
+  <h1 class="section-title text-5xl md:text-6xl text-neutral-100">{% static_trans "Meet Our Artists" %}</h1>
+  <div class="rule mx-auto mt-6"></div>
+  <p class="mt-6 text-neutral-400 max-w-2xl mx-auto">
+    {% static_trans "Each artist keeps their own space — a personal profile with bio, portfolio and reels." %}
+  </p>
+</section>
+
+<section class="max-w-7xl mx-auto px-5 pb-24">
+  {% if artists %}
+  <div data-reveal-grid class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% for artist in artists %}
+      <a href="{{ artist.get_absolute_url }}" class="ink-card group block">
+        <div class="aspect-[4/5] overflow-hidden">
+          {% if artist.avatar %}
+            <img src="{{ artist.avatar.url }}" alt="{{ artist.name }}" class="w-full h-full object-cover" loading="lazy" />
+          {% else %}
+            <div class="w-full h-full flex items-center justify-center bg-char font-gothic text-7xl text-neutral-700">
+              {{ artist.name|first }}
+            </div>
+          {% endif %}
+        </div>
+        <div class="p-5">
+          <h2 class="font-display text-xl text-neutral-100 group-hover:text-gold transition-colors">{{ artist.name }}</h2>
+          <p class="text-xs uppercase tracking-widest text-blood mt-1">{% db_trans artist "role" %}</p>
+          {% if artist.tagline %}<p class="text-sm text-neutral-400 mt-3 line-clamp-2">{% db_trans artist "tagline" %}</p>{% endif %}
+          <div class="flex flex-wrap gap-2 mt-4">
+            {% for s in artist.styles.all %}
+              <span class="filter-chip !cursor-default">{% db_trans s "name" %}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-center text-neutral-500">{% static_trans "Portfolio coming soon" %}.</p>
+  {% endif %}
+</section>
+{% endblock %}

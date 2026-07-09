@@ -1,0 +1,28 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Styles{% endblock %}
+{% block heading %}Tattoo styles{% endblock %}
+{% block actions %}<a href="{% url 'dashboard:style_create' %}" class="dbtn dbtn-gold">+ New style</a>{% endblock %}
+
+{% block content %}
+<div class="card divide-y divide-char2">
+  {% for s in styles %}
+    <div class="flex items-center gap-4 p-4">
+      <span class="h-8 w-8 rounded-md border border-char2 shrink-0" style="background:{{ s.color }}"></span>
+      <div class="min-w-0 flex-1">
+        <p class="text-neutral-100">{{ s.name }}</p>
+        <p class="text-xs text-neutral-500">{{ s.n }} piece{{ s.n|pluralize }} · <span class="text-neutral-600">{{ s.slug }}</span></p>
+      </div>
+      <div class="flex gap-2">
+        <a href="{% url 'dashboard:style_edit' s.pk %}" class="dbtn dbtn-ghost !py-1.5 !px-3">Edit</a>
+        <form method="post" action="{% url 'dashboard:style_delete' s.pk %}" onsubmit="return confirm('Delete {{ s.name|escapejs }}? Portfolio pieces keep their other styles.')">
+          {% csrf_token %}<button class="dbtn dbtn-ghost !py-1.5 !px-3 hover:!text-bloodlight hover:!border-blood">Delete</button>
+        </form>
+      </div>
+    </div>
+  {% empty %}
+    <div class="p-10 text-center text-neutral-500">No styles yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+The above content shows the entire, complete file contents of the requested file.

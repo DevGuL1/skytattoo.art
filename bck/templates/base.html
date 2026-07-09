@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>{% block title %}{{ site.site_name }}{% endblock %} — {{ site.tagline }}</title>
+  <meta name="description" content="{% block meta_description %}{{ site.meta_description }}{% endblock %}" />
+  <meta name="keywords" content="{% block meta_keywords %}{{ site.meta_keywords }}{% endblock %}" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="{% block og_title %}{{ site.site_name }}{% endblock %}" />
+  <meta property="og:description" content="{{ site.meta_description }}" />
+  <meta property="og:type" content="website" />
+  {% if site.og_image %}<meta property="og:image" content="{{ site.og_image.url }}" />{% endif %}
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@300;400;500;600&family=Pirata+One&display=swap"
+    rel="stylesheet" />
+
+  <!-- TailwindCSS (Play CDN) with the gothic palette -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: "#000000",
+            coal: "#0a0a0a",
+            char: "#1a1a1a",
+            blood: "#8B0000",
+            bloodlight: "#b31217",
+            gold: "#FFD700",
+          },
+          fontFamily: {
+            gothic: ['"Pirata One"', "cursive"],
+            display: ['"Cinzel"', "serif"],
+            body: ['"Inter"', "system-ui", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="stylesheet" href="{% static 'css/gothic.css' %}?v=3" />
+</head>
+<body class="bg-ink text-neutral-200 font-body antialiased selection:bg-blood selection:text-white">
+
+  <!-- ░░ NAVBAR ░░ -->
+  <header id="navbar"
+          class="fixed top-0 inset-x-0 z-50 transition-all duration-300
+                 border-b border-transparent">
+    <nav class="max-w-7xl mx-auto flex items-center justify-between px-5 py-4">
+      <a href="{% url 'core:home' %}" class="group flex items-baseline gap-1">
+        <span class="font-gothic text-2xl md:text-3xl text-gold tracking-wide">Skytattoo</span>
+        <span class="font-display text-xs text-blood group-hover:text-gold transition-colors">.art</span>
+      </a>
+
+      <ul class="hidden md:flex items-center gap-8 font-display text-sm uppercase tracking-widest">
+        <li><a href="{% url 'core:home' %}" class="nav-link">Home</a></li>
+        <li><a href="{% url 'artists:list' %}" class="nav-link">Artists</a></li>
+        <li><a href="{% url 'portfolio:list' %}" class="nav-link">Portfolio</a></li>
+        <li><a href="{% url 'core:about' %}" class="nav-link">About</a></li>
+        <li><a href="{% url 'core:contact' %}" class="nav-link">Contact</a></li>
+      </ul>
+
+      <a href="{% url 'core:book' %}"
+         class="hidden md:inline-block btn-gold text-xs">Book Appointment</a>
+
+      <!-- Mobile burger -->
+      <button id="burger" class="md:hidden text-gold" aria-label="Menu">
+        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round" />
+        </svg>
+      </button>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu"
+         class="md:hidden hidden bg-coal/95 backdrop-blur border-t border-char px-5 py-6">
+      <ul class="flex flex-col gap-4 font-display uppercase tracking-widest text-sm">
+        <li><a href="{% url 'core:home' %}" class="nav-link">Home</a></li>
+        <li><a href="{% url 'artists:list' %}" class="nav-link">Artists</a></li>
+        <li><a href="{% url 'portfolio:list' %}" class="nav-link">Portfolio</a></li>
+        <li><a href="{% url 'core:about' %}" class="nav-link">About</a></li>
+        <li><a href="{% url 'core:contact' %}" class="nav-link">Contact</a></li>
+        <li><a href="{% url 'core:book' %}" class="btn-gold inline-block text-xs mt-2">Book Appointment</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ░░ MESSAGES ░░ -->
+  {% if messages %}
+    <div class="fixed top-20 inset-x-0 z-50 flex flex-col items-center gap-2 px-4">
+      {% for message in messages %}
+        <div class="toast max-w-lg w-full rounded-md px-4 py-3 text-sm shadow-lg border
+                    {% if message.tags == 'success' %}bg-char border-gold/40 text-gold
+                    {% elif message.tags == 'error' %}bg-char border-blood text-bloodlight
+                    {% else %}bg-char border-neutral-700 text-neutral-200{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ░░ FOOTER ░░ -->
+  <footer class="border-t border-char bg-coal mt-24">
+    <div class="max-w-7xl mx-auto px-5 py-14 grid gap-10 md:grid-cols-4">
+      <div class="md:col-span-2">
+        <div class="flex items-baseline gap-1">
+          <span class="font-gothic text-3xl text-gold">Skytattoo</span>
+          <span class="font-display text-sm text-blood">.art</span>
+        </div>
+        <p class="mt-4 text-neutral-400 max-w-sm leading-relaxed">
+          {{ site.tagline }}{% if site.about_short %} — {{ site.about_short }}{% endif %}
+        </p>
+      </div>
+
+      <div>
+        <h4 class="font-display uppercase tracking-widest text-xs text-gold mb-4">Explore</h4>
+        <ul class="space-y-2 text-neutral-400 text-sm">
+          <li><a href="{% url 'artists:list' %}" class="hover:text-gold transition-colors">Artists</a></li>
+          <li><a href="{% url 'portfolio:list' %}" class="hover:text-gold transition-colors">Portfolio</a></li>
+          <li><a href="{% url 'core:about' %}" class="hover:text-gold transition-colors">About</a></li>
+          <li><a href="{% url 'core:contact' %}" class="hover:text-gold transition-colors">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-display uppercase tracking-widest text-xs text-gold mb-4">Studio</h4>
+        <ul class="space-y-2 text-neutral-400 text-sm">
+          {% if site.address %}<li>{{ site.address }}</li>{% endif %}
+          {% if site.phone %}<li><a href="tel:{{ site.phone }}" class="hover:text-gold">{{ site.phone }}</a></li>{% endif %}
+          {% if site.email %}<li><a href="mailto:{{ site.email }}" class="hover:text-gold">{{ site.email }}</a></li>{% endif %}
+        </ul>
+        <div class="flex gap-4 mt-5">
+          {% if site.instagram %}<a href="{{ site.instagram }}" class="social" aria-label="Instagram" target="_blank" rel="noopener">IG</a>{% endif %}
+          {% if site.facebook %}<a href="{{ site.facebook }}" class="social" aria-label="Facebook" target="_blank" rel="noopener">FB</a>{% endif %}
+          {% if site.tiktok %}<a href="{{ site.tiktok }}" class="social" aria-label="TikTok" target="_blank" rel="noopener">TT</a>{% endif %}
+          {% if site.youtube %}<a href="{{ site.youtube }}" class="social" aria-label="YouTube" target="_blank" rel="noopener">YT</a>{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-char">
+      <p class="max-w-7xl mx-auto px-5 py-6 text-xs text-neutral-600 text-center">
+        © {% now "Y" %} {{ site.site_name }}. All rights reserved.
+      </p>
+    </div>
+  </footer>
+
+  <!-- ░░ SCRIPTS ░░ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
+
+The above content shows the entire, complete file contents of the requested file.

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static translate_tags %}
+
+{% block title %}{% db_trans item "title" %} — {{ site.site_name }}{% endblock %}
+{% block meta_description %}{% db_trans item "description" as desc %}{{ desc|default:item.title }}{% endblock %}
+
+{% block content %}
+<section class="max-w-6xl mx-auto px-5 pt-32 pb-24">
+  <a href="{% url 'portfolio:list' %}" class="text-sm text-neutral-500 hover:text-gold">← {% static_trans "Back to portfolio" %}</a>
+
+  <div class="grid lg:grid-cols-2 gap-12 mt-6">
+    <div class="ink-card">
+      <img src="{{ item.image.url }}" alt="{% db_trans item 'title' %}" class="w-full object-cover" />
+    </div>
+
+    <div class="flex flex-col justify-center">
+      <div class="flex flex-wrap gap-2 mb-4">
+        {% for s in item.styles.all %}
+          <a href="{% url 'portfolio:list' %}#{{ s.slug }}" class="filter-chip">{% db_trans s "name" %}</a>
+        {% endfor %}
+      </div>
+      <h1 class="font-gothic text-5xl text-neutral-100">{% db_trans item "title" %}</h1>
+
+      {% if item.artist %}
+        <a href="{{ item.artist.get_absolute_url }}" class="inline-flex items-center gap-3 mt-6 group w-fit">
+          {% if item.artist.avatar %}
+            <img src="{{ item.artist.avatar.url }}" class="h-10 w-10 rounded-full object-cover" alt="{{ item.artist.name }}" />
+          {% endif %}
+          <span class="text-neutral-400 group-hover:text-gold transition-colors">{% static_trans "by" %} {{ item.artist.name }}</span>
+        </a>
+      {% endif %}
+
+      {% if item.description %}
+        <p class="text-neutral-300 leading-relaxed mt-6">{% db_trans item "description" %}</p>
+      {% endif %}
+
+      <dl class="grid grid-cols-2 gap-4 mt-8 text-sm">
+        <div><dt class="eyebrow">{% static_trans "Style" %}</dt><dd class="text-neutral-200 mt-1">{{ item.get_color_display }}</dd></div>
+        <div><dt class="eyebrow">{% static_trans "Size" %}</dt><dd class="text-neutral-200 mt-1">{{ item.get_size_display }}</dd></div>
+      </dl>
+
+      <a href="{% url 'core:book' %}{% if item.artist %}?artist={{ item.artist.pk }}{% endif %}" class="btn-blood mt-10 w-fit">{% static_trans "Book Now" %}</a>
+    </div>
+  </div>
+
+  {% if related %}
+  <div class="mt-24">
+    <h2 class="section-title text-2xl text-neutral-100 mb-6">{% static_trans "Featured Portfolio" %}</h2>
+    <div data-reveal-grid class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {% for r in related %}
+        <a href="{{ r.get_absolute_url }}" class="ink-card block aspect-square">
+          <img src="{{ r.image.url }}" alt="{% db_trans r 'title' %}" class="w-full h-full object-cover" loading="lazy" />
+          <div class="overlay"><h3 class="font-display text-neutral-100 text-sm">{% db_trans r "title" %}</h3></div>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

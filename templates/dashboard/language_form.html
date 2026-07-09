@@ -1,0 +1,16 @@
+{% extends "dashboard/base.html" %}
+{% block title %}{% if lang %}Edit language{% else %}New language{% endif %}{% endblock %}
+{% block heading %}{% if lang %}Edit language{% else %}New language{% endif %}{% endblock %}
+
+{% block content %}
+<form method="post" class="max-w-xl">
+  {% csrf_token %}
+  <div class="card p-6">
+    {% include "dashboard/_fields.html" with form=form %}
+  </div>
+  <div class="flex justify-between mt-6">
+    <a href="{% url 'dashboard:language_list' %}" class="dbtn dbtn-ghost">← Back</a>
+    <button class="dbtn dbtn-gold">Save language</button>
+  </div>
+</form>
+{% endblock %}

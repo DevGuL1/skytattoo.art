@@ -1,0 +1,67 @@
+{% extends "dashboard/base.html" %}
+{% block page_title %}Overview{% endblock %}
+{% block dashboard_content %}
+<div class="space-y-6">
+
+  <!-- Stats row -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="dash-card text-center">
+      <div class="font-gothic text-5xl text-gold">{{ portfolio_count }}</div>
+      <p class="font-display text-[10px] uppercase tracking-widest text-neutral-500 mt-2">Portfolio Items</p>
+    </div>
+    <div class="dash-card text-center">
+      <div class="font-gothic text-5xl text-gold">{{ artist_count }}</div>
+      <p class="font-display text-[10px] uppercase tracking-widest text-neutral-500 mt-2">Artists</p>
+    </div>
+    <div class="dash-card text-center">
+      <div class="font-gothic text-5xl text-gold">{{ booking_count|default:"0" }}</div>
+      <p class="font-display text-[10px] uppercase tracking-widest text-neutral-500 mt-2">Bookings</p>
+    </div>
+    <div class="dash-card text-center">
+      <div class="font-gothic text-5xl text-gold">{{ message_count|default:"0" }}</div>
+      <p class="font-display text-[10px] uppercase tracking-widest text-neutral-500 mt-2">Messages</p>
+    </div>
+  </div>
+
+  <!-- Recent portfolio -->
+  <div class="dash-card">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display text-sm uppercase tracking-widest text-neutral-300">Recent Work</h3>
+      <a href="{% url 'dashboard:portfolio_create' %}" class="btn-primary">+ Add Item</a>
+    </div>
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Title</th>
+          <th>Artist</th>
+          <th>Style</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in recent_items %}
+        <tr>
+          <td>
+            {% if item.image %}
+            <img src="{{ item.image.url }}" alt="" class="w-12 h-12 object-cover rounded border border-neutral-800">
+            {% else %}
+            <div class="w-12 h-12 bg-char rounded border border-neutral-800 flex items-center justify-center text-neutral-700 text-xs">—</div>
+            {% endif %}
+          </td>
+          <td class="text-neutral-300">{{ item.title_en }}</td>
+          <td>{% if item.artist %}{{ item.artist.full_name }}{% else %}<span class="text-neutral-600">—</span>{% endif %}</td>
+          <td>{% if item.category %}{{ item.category.title_en }}{% else %}<span class="text-neutral-600">—</span>{% endif %}</td>
+          <td>
+            <a href="{% url 'dashboard:portfolio_edit' item.pk %}" class="btn-primary py-1 px-3 text-[10px]">Edit</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-neutral-600 text-center py-8">No portfolio items yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

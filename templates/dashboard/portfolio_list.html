@@ -1,0 +1,44 @@
+{% extends "dashboard/base.html" %}
+{% block page_title %}Portfolio{% endblock %}
+{% block dashboard_content %}
+<div class="dash-card">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="font-display text-sm uppercase tracking-widest text-neutral-300">Portfolio Items</h2>
+    <a href="{% url 'dashboard:portfolio_create' %}" class="btn-primary">+ Add Item</a>
+  </div>
+  <table class="dash-table">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Title</th>
+        <th>Artist</th>
+        <th>Style</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>
+          {% if item.image %}
+          <img src="{{ item.image.url }}" alt="" class="w-14 h-14 object-cover rounded border border-neutral-800">
+          {% else %}
+          <div class="w-14 h-14 bg-char rounded border border-neutral-800 flex items-center justify-center text-neutral-700 text-xs">—</div>
+          {% endif %}
+        </td>
+        <td class="text-neutral-300">{{ item.title_en }}</td>
+        <td>{% if item.artist %}{{ item.artist.full_name }}{% else %}<span class="text-neutral-600">—</span>{% endif %}</td>
+        <td>{% if item.category %}{{ item.category.title_en }}{% else %}<span class="text-neutral-600">—</span>{% endif %}</td>
+        <td class="flex gap-2 items-center">
+          <a href="{% url 'dashboard:portfolio_edit' item.pk %}" class="btn-primary py-1 px-3 text-[10px]">Edit</a>
+          <a href="{% url 'dashboard:portfolio_delete' item.pk %}" class="btn-danger py-1 px-3 text-[10px]"
+             onclick="return confirm('Delete this item?')">Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-neutral-600 text-center py-8">No portfolio items found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

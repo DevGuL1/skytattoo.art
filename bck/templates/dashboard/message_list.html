@@ -1,0 +1,274 @@
+{% extends 'dashboard/base.html' %}
+
+{% block message %}
+    {% include 'dashboard/elements/alert.html' %}
+{% endblock %}
+
+{% block additional_css %}
+<style>
+    .notification-inbox-page .notification-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .notification-inbox-page .notification-toolbar-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+    }
+    .notification-inbox-page .notification-search-form {
+        display: flex;
+        flex: 1 1 24rem;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        align-items: center;
+    }
+    .notification-inbox-page .notification-search-form .form-control {
+        min-width: 18rem;
+    }
+    .notification-inbox-page .notification-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+    .notification-inbox-page .notification-summary-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        border-radius: 999px;
+        padding: 0.55rem 0.9rem;
+        background: var(--rgba-primary-1);
+        color: #5b667a;
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+    .notification-inbox-page .notification-summary-chip strong {
+        color: #1f2937;
+        font-weight: 700;
+    }
+    .notification-inbox-page .notification-mail-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.95rem;
+    }
+    .notification-inbox-page .notification-mail-item {
+        position: relative;
+        display: block;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 1rem;
+        background: #fff;
+        padding: 1.1rem 1.25rem;
+        color: inherit;
+        overflow: hidden;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .notification-inbox-page .notification-mail-item::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: linear-gradient(180deg, var(--primary) 0%, #ff8a7a 100%);
+        opacity: 0;
+    }
+    .notification-inbox-page .notification-mail-item:hover {
+        color: inherit;
+        transform: translateY(-1px);
+        border-color: rgba(255, 98, 80, 0.35);
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    }
+    .notification-inbox-page .notification-mail-item.is-unread {
+        background: linear-gradient(180deg, rgba(255, 98, 80, 0.04) 0%, #ffffff 100%);
+    }
+    .notification-inbox-page .notification-mail-item.is-unread::before {
+        opacity: 1;
+    }
+    .notification-inbox-page .notification-mail-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1.25rem;
+        align-items: start;
+    }
+    .notification-inbox-page .notification-mail-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.8rem;
+    }
+    .notification-inbox-page .notification-mail-subject {
+        color: #1f2937;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+    .notification-inbox-page .notification-mail-preview {
+        margin-top: 0.4rem;
+        color: #60708a;
+        line-height: 1.6;
+        font-size: 0.93rem;
+    }
+    .notification-inbox-page .notification-mail-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-top: 0.9rem;
+        color: #7b879b;
+        font-size: 0.84rem;
+    }
+    .notification-inbox-page .notification-mail-aside {
+        min-width: 10.5rem;
+        text-align: right;
+    }
+    .notification-inbox-page .notification-mail-sender {
+        color: #2f3d53;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+    .notification-inbox-page .notification-mail-date {
+        color: #7d8ca3;
+        font-size: 0.84rem;
+        margin-top: 0.35rem;
+    }
+    .notification-inbox-page .notification-empty-state {
+        border: 1px dashed rgba(15, 23, 42, 0.12);
+        border-radius: 1rem;
+        padding: 3rem 1.5rem;
+        background: linear-gradient(180deg, rgba(255, 98, 80, 0.03) 0%, #ffffff 100%);
+        text-align: center;
+        color: #6b7280;
+    }
+    @media (max-width: 767.98px) {
+        .notification-inbox-page .notification-search-form {
+            justify-content: stretch;
+        }
+        .notification-inbox-page .notification-search-form .form-control {
+            min-width: 0;
+            width: 100%;
+        }
+        .notification-inbox-page .notification-mail-grid {
+            grid-template-columns: 1fr;
+        }
+        .notification-inbox-page .notification-mail-aside {
+            min-width: 0;
+            text-align: left;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row page-titles">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active"><a href="javascript:void(0)">Notifications</a></li>
+        <li class="breadcrumb-item"><a href="javascript:void(0)">Inbox</a></li>
+    </ol>
+</div>
+
+<div class="row notification-inbox-page">
+    <div class="col-lg-12">
+        <div class="card notification-shell-card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-xl-3 col-lg-4">
+                        {% include 'dashboard/notifications/_mail_nav.html' %}
+                    </div>
+                    <div class="col-xl-9 col-lg-8">
+                        <div class="email-right-box">
+                            <div class="notification-toolbar">
+                                <div class="notification-toolbar-actions">
+                                    <div class="btn-group mb-1">
+                                        <a href="{% url 'dashboard:notifications:message-list' %}" class="btn btn-primary light px-3"><i class="ti-reload me-2"></i>Refresh</a>
+                                        <a href="{% url 'dashboard:notifications:manual-send' %}" class="btn btn-primary light px-3"><i class="fa fa-paper-plane me-2"></i>Compose</a>
+                                    </div>
+                                </div>
+                                <form method="get" class="notification-search-form">
+                                    {% if mail_nav_active_mailbox and mail_nav_active_mailbox != 'all' %}
+                                    <input type="hidden" name="mailbox" value="{{ mail_nav_active_mailbox }}">
+                                    {% endif %}
+                                    {% if mail_nav_active_channel %}
+                                    <input type="hidden" name="channel" value="{{ mail_nav_active_channel }}">
+                                    {% endif %}
+                                    <input type="text" name="q" value="{{ mail_nav_search_query }}" class="form-control" placeholder="Search subject, recipient, event...">
+                                    <button class="btn btn-primary" type="submit">Search</button>
+                                </form>
+                            </div>
+
+                            <div class="notification-summary">
+                                <span class="notification-summary-chip"><strong>{{ selected_count }}</strong> total</span>
+                                <span class="notification-summary-chip">Mailbox: <strong>{{ mail_nav_active_mailbox|default:"all"|title }}</strong></span>
+                                <span class="notification-summary-chip">Channel: <strong>{{ mail_nav_active_channel|default:"all"|upper }}</strong></span>
+                                {% if mail_nav_search_query %}<span class="notification-summary-chip">Search: <strong>{{ mail_nav_search_query }}</strong></span>{% endif %}
+                            </div>
+
+                            <div class="notification-mail-list">
+                                {% for message in page_obj %}
+                                <a href="{% url 'dashboard:notifications:message-detail' message.pk %}" class="notification-mail-item text-decoration-none {% if not message.is_opened %}is-unread{% endif %}">
+                                    <div class="notification-mail-grid">
+                                        <div>
+                                            <div class="notification-mail-badges">
+                                                <span class="badge badge-outline-primary">{{ message.get_channel_display }}</span>
+                                                <span class="badge {% if message.status == 'sent' %}badge-success{% elif message.status == 'failed' %}badge-danger{% elif message.status == 'pending' %}badge-warning{% else %}badge-light{% endif %}">
+                                                    {{ message.get_status_display }}
+                                                </span>
+                                                {% if not message.is_opened %}
+                                                <span class="badge badge-primary">New</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="notification-mail-subject">{{ message.mailbox_subject }}</div>
+                                            <div class="notification-mail-preview">{{ message.mailbox_preview|truncatechars:180|default:"No message body" }}</div>
+                                            <div class="notification-mail-meta">
+                                                <span>{{ message.recipient|default:"-" }}</span>
+                                                {% if message.provider_config %}<span>{{ message.provider_config.name }}</span>{% endif %}
+                                                {% if message.event_key %}<span>{{ message.event_key }}</span>{% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="notification-mail-aside">
+                                            <div class="notification-mail-sender">{{ message.sender_display }}</div>
+                                            <div class="notification-mail-date">{{ message.created_at|date:"Y-m-d H:i" }}</div>
+                                        </div>
+                                    </div>
+                                </a>
+                                {% empty %}
+                                <div class="notification-empty-state">
+                                    No notifications matched this inbox view.
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            {% if page_obj.paginator.num_pages > 1 %}
+                            <div class="row mt-4">
+                                <div class="col-12 ps-3">
+                                    <nav>
+                                        <ul class="pagination pagination-gutter pagination-primary pagination-sm no-bg">
+                                            {% if page_obj.has_previous %}
+                                            <li class="page-item page-indicator">
+                                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if mail_nav_active_mailbox and mail_nav_active_mailbox != 'all' %}&mailbox={{ mail_nav_active_mailbox }}{% endif %}{% if mail_nav_active_channel %}&channel={{ mail_nav_active_channel }}{% endif %}{% if mail_nav_search_query %}&q={{ mail_nav_search_query|urlencode }}{% endif %}">
+                                                    <i class="la la-angle-left"></i>
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                            <li class="page-item active"><a class="page-link" href="javascript:void(0)">{{ page_obj.number }}</a></li>
+                                            {% if page_obj.has_next %}
+                                            <li class="page-item page-indicator">
+                                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if mail_nav_active_mailbox and mail_nav_active_mailbox != 'all' %}&mailbox={{ mail_nav_active_mailbox }}{% endif %}{% if mail_nav_active_channel %}&channel={{ mail_nav_active_channel }}{% endif %}{% if mail_nav_search_query %}&q={{ mail_nav_search_query|urlencode }}{% endif %}">
+                                                    <i class="la la-angle-right"></i>
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

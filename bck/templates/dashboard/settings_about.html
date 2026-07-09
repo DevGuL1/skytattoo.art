@@ -1,0 +1,42 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="dashboard-card">
+            <h2 class="mb-4">Studio settings</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ site_form.as_p }}
+                <button type="submit" name="save_site" class="btn btn-primary">Save studio info</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="dashboard-card">
+            <h2 class="mb-4">Homepage content</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ home_form.as_p }}
+                <button type="submit" name="save_home" class="btn btn-primary">Save homepage</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-5">
+        <div class="dashboard-card">
+            <h2 class="mb-4">Working hours</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ hour_form.as_p }}
+                <button type="submit" class="btn btn-primary">Add hour</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="dashboard-card">
+            <table class="table table-dark"><thead><tr><th>Day</th><th>Hours</th><th></th></tr></thead><tbody>{% for hour in hours %}<tr><td>{{ hour.label_en }}</td><td>{% if hour.is_closed %}Closed{% else %}{{ hour.opens_at|time:"H:i" }} - {{ hour.closes_at|time:"H:i" }}{% endif %}</td><td><form method="post" action="{% url 'dashboard_hour_delete' hour.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Delete</button></form></td></tr>{% endfor %}</tbody></table>
+        </div>
+    </div>
+</div>
+{% endblock %}

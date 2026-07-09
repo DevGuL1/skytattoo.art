@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="dashboard-shell">
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-lg-2 dashboard-sidebar">
+                <h4 class="mb-4">{{ site_settings.studio_name }}</h4>
+                <a href="{% url 'dashboard_home' %}" class="{% if dashboard_section == 'overview' %}active{% endif %}">Overview</a>
+                <a href="{% url 'dashboard_settings' %}" class="{% if dashboard_section == 'settings' %}active{% endif %}">Settings</a>
+                <a href="{% url 'dashboard_artists' %}" class="{% if dashboard_section == 'artists' %}active{% endif %}">Artists</a>
+                {% if request.user.is_superuser %}<a href="{% url 'dashboard_services' %}" class="{% if dashboard_section == 'services' %}active{% endif %}">Services</a>{% endif %}
+                <a href="{% url 'dashboard_portfolio_items' %}" class="{% if dashboard_section == 'portfolio' %}active{% endif %}">Portfolio</a>
+                {% if request.user.is_superuser %}<a href="{% url 'dashboard_portfolio_categories' %}" class="{% if dashboard_section == 'portfolio' %}active{% endif %}">Categories</a>{% endif %}
+                <a href="{% url 'dashboard_media' %}" class="{% if dashboard_section == 'media' %}active{% endif %}">Hero Media</a>
+                {% if request.user.is_superuser %}<a href="{% url 'dashboard_testimonials' %}" class="{% if dashboard_section == 'settings' %}active{% endif %}">Testimonials</a>{% endif %}
+                <a href="{% url 'home' %}">View site</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            </aside>
+            <main class="col-lg-10 p-4 p-lg-5">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+                {% block dashboard_content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+</div>
+{% endblock %}

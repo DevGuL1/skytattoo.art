@@ -1,0 +1,239 @@
+/* ==========================================================================
+   Skytattoo.art — gothic dark theme helpers
+   Tailwind handles most utilities; this file holds custom components,
+   textures and animations that are awkward to express inline.
+   ========================================================================== */
+
+:root {
+  --blood: #8b0000;
+  --gold: #ffd700;
+}
+
+/* Subtle grain + vignette on the whole page for a darker, filmic mood. */
+body {
+  background-color: #000;
+  background-image:
+    radial-gradient(ellipse at top, rgba(139, 0, 0, 0.14), transparent 55%),
+    radial-gradient(ellipse at bottom, rgba(0, 0, 0, 0.9), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* ----- Navbar link underline ----- */
+.nav-link {
+  position: relative;
+  color: #d4d4d4;
+  transition: color 0.25s ease;
+}
+.nav-link:hover {
+  color: var(--gold);
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  height: 1px;
+  width: 0;
+  background: var(--gold);
+  transition: width 0.3s ease;
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Navbar gains a backdrop once the page is scrolled (toggled from main.js). */
+#navbar.scrolled {
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom-color: rgba(139, 0, 0, 0.4);
+}
+
+/* ----- Buttons ----- */
+.btn-gold,
+.btn-blood {
+  display: inline-block;
+  font-family: "Cinzel", serif;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  padding: 0.85rem 1.75rem;
+  border-radius: 2px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease,
+    color 0.25s ease;
+}
+.btn-gold {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+}
+.btn-gold:hover {
+  background: var(--gold);
+  color: #000;
+  box-shadow: 0 0 24px rgba(255, 215, 0, 0.35);
+  transform: translateY(-2px);
+}
+.btn-blood {
+  background: var(--blood);
+  color: #fff;
+  border: 1px solid var(--blood);
+}
+.btn-blood:hover {
+  background: #b31217;
+  box-shadow: 0 0 24px rgba(139, 0, 0, 0.55);
+  transform: translateY(-2px);
+}
+
+/* ----- Social pills ----- */
+.social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.25rem;
+  width: 2.25rem;
+  border-radius: 9999px;
+  border: 1px solid #333;
+  font-family: "Cinzel", serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: #a3a3a3;
+  transition: all 0.25s ease;
+}
+.social:hover {
+  color: var(--gold);
+  border-color: var(--gold);
+  transform: translateY(-3px);
+}
+
+/* ----- Section heading with gothic flourish ----- */
+.section-title {
+  font-family: "Cinzel", serif;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.eyebrow {
+  font-family: "Cinzel", serif;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  font-size: 0.7rem;
+  color: var(--blood);
+}
+.rule {
+  height: 1px;
+  width: 80px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+}
+
+/* ----- Filter chips ----- */
+.filter-chip {
+  font-family: "Cinzel", serif;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  padding: 0.5rem 1.1rem;
+  border: 1px solid #2a2a2a;
+  border-radius: 9999px;
+  color: #a3a3a3;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.filter-chip:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.filter-chip.is-active {
+  background: var(--blood);
+  border-color: var(--blood);
+  color: #fff;
+}
+
+/* ----- Portfolio card ----- */
+.ink-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid #1a1a1a;
+  background: #0a0a0a;
+}
+.ink-card img {
+  will-change: transform;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  filter: grayscale(35%) contrast(1.05);
+}
+.ink-card:hover img {
+  transform: scale(1.08);
+  filter: grayscale(0%) contrast(1.1);
+}
+.ink-card .overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.ink-card:hover .overlay {
+  opacity: 1;
+}
+
+/* Isotope grid animation smoothing (artist profile page, fitRows mode).
+   NOTE: do not put a transition on .iso-item — Isotope applies its own inline
+   transition during arrange() and resets styles instantly when it finishes.
+   A persistent CSS transition here makes that reset animate too, so items
+   visibly "snap back" / replay after every filter. Let Isotope own it via its
+   `transitionDuration` option. */
+.iso-grid {
+  transition: height 0.4s ease;
+}
+
+/* Studio portfolio: CSS multi-column masonry with a JS fade filter.
+   (Deliberately not Isotope masonry — its columnWidth division can hit 0 and
+   hang the page when items scale during filtering.) The fade is owned entirely
+   by CSS; JS only toggles .pf-hide and collapses display afterwards. */
+.pf-item {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  transform-origin: center;
+}
+.pf-item.pf-hide {
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+/* Toast auto-fade */
+.toast {
+  animation: toastIn 0.4s ease, toastOut 0.5s ease 5s forwards;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes toastOut {
+  to { opacity: 0; transform: translateY(-12px); visibility: hidden; }
+}
+
+/* Reveal-on-scroll base state (GSAP animates these in) */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+/* Tattoo Gun Buzzing/Vibration Keyframes */
+@keyframes buzz {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-0.5px, 0.5px) rotate(-0.5deg); }
+  20% { transform: translate(-0.5px, -0.5px) rotate(0.5deg); }
+  30% { transform: translate(0.5px, 0.5px) rotate(0deg); }
+  40% { transform: translate(0.5px, -0.5px) rotate(0.5deg); }
+  50% { transform: translate(-0.5px, 0.5px) rotate(-0.5deg); }
+  60% { transform: translate(-0.5px, -0.5px) rotate(0deg); }
+  70% { transform: translate(0.5px, 0.5px) rotate(-0.5deg); }
+  80% { transform: translate(-0.5px, -0.5px) rotate(0.5deg); }
+  90% { transform: translate(0.5px, 0.5px) rotate(0deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.animate-buzz {
+  animation: buzz 0.15s infinite linear;
+}
+

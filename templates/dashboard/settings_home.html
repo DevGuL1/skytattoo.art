@@ -1,0 +1,35 @@
+{% extends "dashboard/base.html" %}
+{% block page_title %}Homepage Settings{% endblock %}
+{% block dashboard_content %}
+<div class="grid md:grid-cols-2 gap-6">
+
+  <div class="dash-card">
+    <h3 class="font-display text-xs uppercase tracking-widest text-gold/70 mb-5">Site Settings</h3>
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+      {% csrf_token %}
+      {% for field in site_form %}
+        <div>
+          <label class="dash-label">{{ field.label }}</label>
+          {{ field }}
+        </div>
+      {% endfor %}
+      <button type="submit" name="save_site" class="btn-primary">Save</button>
+    </form>
+  </div>
+
+  <div class="dash-card">
+    <h3 class="font-display text-xs uppercase tracking-widest text-gold/70 mb-5">Homepage Content</h3>
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {% for field in home_form %}
+        <div>
+          <label class="dash-label">{{ field.label }}</label>
+          {{ field }}
+        </div>
+      {% endfor %}
+      <button type="submit" name="save_home" class="btn-primary">Save Homepage</button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

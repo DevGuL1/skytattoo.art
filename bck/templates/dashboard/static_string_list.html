@@ -1,0 +1,36 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Static Strings{% endblock %}
+{% block heading %}Static UI Translations{% endblock %}
+{% block actions %}<a href="{% url 'dashboard:static_string_create' %}" class="dbtn dbtn-gold">+ Add String</a>{% endblock %}
+
+{% block content %}
+<!-- Search -->
+<div class="mb-6">
+  <form method="get" class="flex gap-3 max-w-md">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search strings…"
+           class="w-full bg-black/40 border border-neutral-800 focus:border-gold text-neutral-100 placeholder-neutral-500 rounded-md px-4 py-2 outline-none text-sm transition-colors" />
+    <button type="submit" class="dbtn dbtn-gold !py-2 !px-4 text-sm">Search</button>
+    {% if q %}
+      <a href="{% url 'dashboard:static_string_list' %}" class="dbtn dbtn-ghost !py-2 !px-4 text-sm">Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+<div class="card divide-y divide-char2">
+  {% for s in strings %}
+    <div class="flex items-center gap-4 p-4">
+      <div class="min-w-0 flex-1">
+        <p class="text-neutral-100 font-medium">{{ s.key }}</p>
+      </div>
+      <div class="flex gap-2">
+        <a href="{% url 'dashboard:static_string_edit' s.pk %}" class="dbtn dbtn-ghost !py-1.5 !px-3">Edit</a>
+        <form method="post" action="{% url 'dashboard:static_string_delete' s.pk %}" onsubmit="return confirm('Delete this static string translation key? The site will fallback to displaying the key itself.')">
+          {% csrf_token %}<button class="dbtn dbtn-ghost !py-1.5 !px-3 hover:!text-bloodlight hover:!border-blood">Delete</button>
+        </form>
+      </div>
+    </div>
+  {% empty %}
+    <div class="p-10 text-center text-neutral-500">No static strings found. Visit public pages to auto-register UI strings!</div>
+  {% endfor %}
+</div>
+{% endblock %}

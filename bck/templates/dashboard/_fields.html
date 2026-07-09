@@ -1,0 +1,98 @@
+{# Renders form fields grouped into tabs for dynamic translations if available. #}
+{% if form.non_field_errors %}
+  <div class="mb-4 text-sm text-bloodlight">{{ form.non_field_errors }}</div>
+{% endif %}
+
+{% with tabs=form.translation_tabs %}
+  {% if tabs|length > 1 %}
+    <!-- Tab Navigation -->
+    <div class="border-b border-neutral-800 flex flex-wrap gap-2 mb-6" id="form-tabs-header-{{ form.prefix|default:'main' }}">
+      {% for tab in tabs %}
+        <button type="button" 
+                onclick="switchFormTab('{{ tab.code }}', '{{ form.prefix|default:'main' }}')"
+                data-tab-btn="{{ tab.code }}"
+                class="px-4 py-2 text-xs font-display uppercase tracking-wider border-b-2 transition-all duration-200 focus:outline-none
+                       {% if tab.is_default %}border-gold text-gold font-semibold{% else %}border-transparent text-neutral-500 hover:text-neutral-300{% endif %}">
+          {{ tab.name }}
+        </button>
+      {% endfor %}
+    </div>
+
+    <!-- Tab Panels -->
+    {% for tab in tabs %}
+      <div data-tab-panel="{{ tab.code }}" 
+           class="{% if not tab.is_default %}hidden{% endif %} transition-opacity duration-200">
+        <div class="grid sm:grid-cols-2 gap-x-6 gap-y-5">
+          {% for field in tab.fields %}
+            <div class="{% if field.field.widget.input_type == 'checkbox' or 'Textarea' in field.field.widget.class_name %}sm:col-span-2{% endif %}{% if field.name in 'hero_subtitle,about_story,cta_band_text,bio,description,about_short,opening_hours,google_maps_embed,message,text,meta_description' %} sm:col-span-2{% endif %}">
+              {% if field.field.widget.input_type == 'checkbox' %}
+                <label class="flex items-center gap-3 cursor-pointer normal-case tracking-normal !text-neutral-300 !text-sm">
+                  {{ field }} <span>{{ field.label }}</span>
+                </label>
+              {% else %}
+                <label for="{{ field.id_for_label }}" class="block mb-1.5">{{ field.label }}</label>
+                {{ field }}
+              {% endif %}
+              {% if field.help_text %}<p class="mt-1 text-xs text-neutral-500">{{ field.help_text|safe }}</p>{% endif %}
+              {% for e in field.errors %}<p class="mt-1 text-xs text-bloodlight">{{ e }}</p>{% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+
+    <!-- Switcher Script (Defined safely once) -->
+    <script>
+      if (typeof window.switchFormTab === 'undefined') {
+        window.switchFormTab = function(langCode, prefix) {
+          var header = document.getElementById('form-tabs-header-' + prefix);
+          if (!header) return;
+          
+          // Switch Active Tab Button styling
+          var buttons = header.querySelectorAll('[data-tab-btn]');
+          buttons.forEach(function(btn) {
+            if (btn.getAttribute('data-tab-btn') === langCode) {
+              btn.classList.add('border-gold', 'text-gold', 'font-semibold');
+              btn.classList.remove('border-transparent', 'text-neutral-500');
+            } else {
+              btn.classList.remove('border-gold', 'text-gold', 'font-semibold');
+              btn.classList.add('border-transparent', 'text-neutral-500');
+            }
+          });
+
+          // Toggle Tab Panel visibility
+          var container = header.parentElement;
+          var panels = container.querySelectorAll('[data-tab-panel]');
+          panels.forEach(function(panel) {
+            if (panel.getAttribute('data-tab-panel') === langCode) {
+              panel.classList.remove('hidden');
+            } else {
+              panel.classList.add('hidden');
+            }
+          });
+        };
+      }
+    </script>
+
+  {% else %}
+    <!-- Default Single Tab layout (non-translatable forms) -->
+    <div class="grid sm:grid-cols-2 gap-x-6 gap-y-5">
+      {% for field in form.visible_fields %}
+        <div class="{% if field.field.widget.input_type == 'checkbox' or 'Textarea' in field.field.widget.class_name %}sm:col-span-2{% endif %}{% if field.name in 'hero_subtitle,about_story,cta_band_text,bio,description,about_short,opening_hours,google_maps_embed,message,text,meta_description' %} sm:col-span-2{% endif %}">
+          {% if field.field.widget.input_type == 'checkbox' %}
+            <label class="flex items-center gap-3 cursor-pointer normal-case tracking-normal !text-neutral-300 !text-sm">
+              {{ field }} <span>{{ field.label }}</span>
+            </label>
+          {% else %}
+            <label for="{{ field.id_for_label }}" class="block mb-1.5">{{ field.label }}</label>
+            {{ field }}
+          {% endif %}
+          {% if field.help_text %}<p class="mt-1 text-xs text-neutral-500">{{ field.help_text|safe }}</p>{% endif %}
+          {% for e in field.errors %}<p class="mt-1 text-xs text-bloodlight">{{ e }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  
+  {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+{% endwith %}

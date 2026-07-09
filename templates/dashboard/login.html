@@ -1,0 +1,180 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ka" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Login — Skytattoo.art</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@300;400;500&family=Pirata+One&display=swap"
+    rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: "#000000",
+            coal: "#0a0a0a",
+            char: "#1a1a1a",
+            blood: "#8B0000",
+            bloodlight: "#b31217",
+            gold: "#FFD700",
+          },
+          fontFamily: {
+            gothic: ['"Pirata One"', "cursive"],
+            display: ['"Cinzel"', "serif"],
+            body: ['"Inter"', "system-ui", "sans-serif"],
+          },
+          keyframes: {
+            buzz: {
+              '0%':  { transform: 'translate(0,0) rotate(0deg)' },
+              '25%': { transform: 'translate(-0.5px,0.5px) rotate(-0.5deg)' },
+              '50%': { transform: 'translate(0.5px,-0.5px) rotate(0.5deg)' },
+              '75%': { transform: 'translate(0.5px,0.5px) rotate(0deg)' },
+              '100%':{ transform: 'translate(0,0) rotate(0deg)' },
+            }
+          },
+          animation: {
+            buzz: 'buzz 0.07s infinite',
+          }
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body { background:#000; }
+    .input-field {
+      width:100%; background:rgba(26,26,26,0.5);
+      border:1px solid #2a2a2a; border-radius:4px;
+      padding:0.85rem 1rem; color:#e5e5e5;
+      font-family:'Inter',sans-serif; font-size:0.9rem;
+      outline:none; transition:border-color 0.2s;
+    }
+    .input-field:focus { border-color:rgba(255,215,0,0.5); }
+    .btn-gold {
+      display:block; width:100%;
+      background:transparent; border:1px solid #FFD700;
+      color:#FFD700; padding:0.9rem 1rem;
+      font-family:'Cinzel',serif; font-size:0.7rem;
+      letter-spacing:0.2em; text-transform:uppercase;
+      cursor:pointer; transition:background 0.2s,color 0.2s;
+    }
+    .btn-gold:hover { background:#FFD700; color:#000; }
+    .ornament { color:rgba(255,215,0,0.3); font-size:1.2rem; user-select:none; }
+  </style>
+</head>
+<body class="min-h-screen bg-ink text-neutral-200 font-body antialiased flex items-center justify-center relative overflow-hidden">
+
+  <!-- Background radial glow -->
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute w-[600px] h-[600px] rounded-full bg-blood/5 blur-[150px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute w-[300px] h-[300px] rounded-full bg-gold/3 blur-[100px] top-1/4 right-1/4"></div>
+  </div>
+
+  <!-- Corner ornaments -->
+  <span class="ornament absolute top-6 left-6 text-2xl">⸸</span>
+  <span class="ornament absolute top-6 right-6 text-2xl">⸸</span>
+  <span class="ornament absolute bottom-6 left-6 text-2xl">⸸</span>
+  <span class="ornament absolute bottom-6 right-6 text-2xl">⸸</span>
+
+  <!-- Login card -->
+  <div id="login-card" class="relative z-10 w-full max-w-md mx-5 opacity-0 translate-y-8">
+
+    <!-- Card border glow wrapper -->
+    <div class="bg-coal/90 backdrop-blur-md border border-neutral-800 rounded-lg shadow-[0_0_80px_rgba(0,0,0,0.95),0_0_30px_rgba(139,0,0,0.1)] p-10">
+
+      <!-- Logo / Header -->
+      <div class="text-center mb-10">
+        <!-- Tattoo gun icon -->
+        <div class="flex justify-center mb-5">
+          <svg class="w-12 h-12 text-blood" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="18" y="14" width="10" height="16" rx="1" fill="currentColor" fill-opacity="0.15"/>
+            <rect x="30" y="14" width="10" height="16" rx="1" fill="currentColor" fill-opacity="0.15"/>
+            <path d="M10 10h36v6H10zM14 16v18a4 4 0 004 4h18a4 4 0 004-4V16"/>
+            <path d="M22 10V6h14v4M29 6v4" stroke-width="2"/>
+            <rect x="25" y="34" width="8" height="16" rx="1" fill="currentColor"/>
+            <path d="M29 50v8l-1.5 2.5 3 0-1.5-2.5z" fill="currentColor"/>
+          </svg>
+        </div>
+
+        <div class="flex items-baseline justify-center gap-1 mb-2">
+          <span class="font-gothic text-3xl text-gold tracking-wide">Skytattoo</span>
+          <span class="font-display text-xs text-blood">.art</span>
+        </div>
+        <h1 class="font-display text-xs uppercase tracking-[0.3em] text-neutral-500 mt-1">Studio Dashboard</h1>
+        <div class="flex items-center gap-3 mt-5">
+          <div class="flex-1 h-px bg-gradient-to-r from-transparent to-neutral-700"></div>
+          <span class="text-blood/60 text-xs">✦</span>
+          <div class="flex-1 h-px bg-gradient-to-l from-transparent to-neutral-700"></div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form method="post" class="space-y-5">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="p-3 rounded bg-blood/10 border border-bloodlight/30 text-bloodlight text-xs font-light leading-relaxed">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+          </div>
+        {% endif %}
+
+        {% for field in form %}
+          <div>
+            <label class="block font-display text-[10px] uppercase tracking-[0.2em] text-gold/60 mb-2" for="{{ field.auto_id }}">
+              {{ field.label }}
+            </label>
+            <input
+              type="{% if field.html_name == 'password' %}password{% else %}text{% endif %}"
+              name="{{ field.html_name }}"
+              id="{{ field.auto_id }}"
+              class="input-field"
+              autocomplete="{% if field.html_name == 'password' %}current-password{% else %}username{% endif %}"
+              required />
+            {% if field.errors %}
+              {% for error in field.errors %}
+                <p class="text-bloodlight text-xs mt-1 font-light">{{ error }}</p>
+              {% endfor %}
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <div class="pt-2">
+          <button type="submit" class="btn-gold">შესვლა · Enter</button>
+        </div>
+      </form>
+
+      <!-- Footer -->
+      <div class="mt-8 text-center">
+        <a href="/" class="font-display text-[10px] uppercase tracking-widest text-neutral-700 hover:text-gold transition-colors">
+          ← საიტზე დაბრუნება
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.gsap) {
+        gsap.to('#login-card', {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          ease: 'power2.out',
+          delay: 0.2
+        });
+      } else {
+        const card = document.getElementById('login-card');
+        if (card) { card.style.opacity = '1'; card.style.transform = 'none'; }
+      }
+    });
+  </script>
+</body>
+</html>

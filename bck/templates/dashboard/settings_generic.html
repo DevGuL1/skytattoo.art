@@ -1,0 +1,21 @@
+{% extends "dashboard/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}{{ title }}{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="space-y-6">
+  {% csrf_token %}
+  {% for prefix, form in forms.items %}
+    <section class="card p-6">
+      <h2 class="font-display text-lg text-gold mb-5 capitalize">{{ prefix }}</h2>
+      {% include "dashboard/_fields.html" with form=form %}
+    </section>
+  {% endfor %}
+  <div class="flex justify-end gap-3">
+    <a href="{% url 'dashboard:overview' %}" class="dbtn dbtn-ghost">Cancel</a>
+    <button class="dbtn dbtn-gold">Save changes</button>
+  </div>
+</form>
+{% endblock %}
+
+The above content shows the entire, complete file contents of the requested file.

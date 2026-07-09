@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load static translate_tags %}
+
+{% block content %}
+
+<!-- ░░ HERO ░░ -->
+<section data-hero class="relative min-h-screen flex items-center justify-center overflow-hidden">
+  {% if site.hero_video %}
+    <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover opacity-40">
+      <source src="{{ site.hero_video.url }}" type="video/mp4">
+    </video>
+  {% elif site.hero_bg %}
+    <div class="absolute inset-0 bg-cover bg-center opacity-40" style="background-image:url('{{ site.hero_bg.url }}')"></div>
+  {% endif %}
+  <div class="absolute inset-0 bg-gradient-to-b from-blood/20 via-ink to-ink"></div>
+  <div class="absolute inset-0 opacity-[0.06]"
+       style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22><path d=%22M0 39.5H40M39.5 0V40%22 stroke=%22%23fff%22 stroke-width=%220.5%22/></svg>');"></div>
+
+  <div class="relative z-10 text-center px-5 max-w-4xl">
+    {% if site.hero_eyebrow %}<p data-hero-eyebrow class="eyebrow mb-6">{% db_trans site "hero_eyebrow" %}</p>{% endif %}
+    <h1 data-hero-title class="font-gothic text-6xl md:text-8xl lg:text-9xl text-neutral-100 leading-none">
+      {% db_trans site "hero_title" %}<span class="text-blood">{% db_trans site "hero_title_accent" %}</span>
+    </h1>
+    {% if site.hero_subtitle %}<p data-hero-sub class="mt-8 text-lg md:text-xl text-neutral-400 max-w-2xl mx-auto font-light">{% db_trans site "hero_subtitle" %}</p>{% endif %}
+    <div class="mt-12 flex flex-col sm:flex-row items-center justify-center gap-5">
+      <a data-hero-cta href="{% url 'core:book' %}" class="btn-blood">{% db_trans site "cta_primary_label" as primary_lbl %}{{ primary_lbl|default:"Book Appointment" }}</a>
+      <a data-hero-cta href="{% url 'artists:list' %}" class="btn-gold">{% db_trans site "cta_secondary_label" as secondary_lbl %}{{ secondary_lbl|default:"Meet Our Artists" }}</a>
+    </div>
+  </div>
+
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-gold/60 animate-bounce">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path d="M12 5v14M6 13l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </div>
+</section>
+
+<!-- ░░ FEATURED PORTFOLIO ░░ -->
+{% if site.show_featured %}
+<section class="max-w-7xl mx-auto px-5 py-24">
+  <div class="flex flex-col items-center text-center mb-14 reveal">
+    <p class="eyebrow mb-3">{% db_trans site "featured_eyebrow" as feat_eyebrow %}{{ feat_eyebrow|default:"Latest Ink" }}</p>
+    <h2 class="section-title text-4xl md:text-5xl text-neutral-100">{% db_trans site "featured_title" as feat_title %}{{ feat_title|default:"Featured Portfolio" }}</h2>
+    <div class="rule mt-6"></div>
+  </div>
+
+  {% if featured %}
+    <div data-reveal-grid class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {% for item in featured %}
+        <a href="{{ item.get_absolute_url }}"
+           class="ink-card block aspect-[3/4] {% if forloop.counter0 == 0 %}md:col-span-2 md:row-span-2 md:aspect-square{% endif %}">
+          <img src="{{ item.image.url }}" alt="{% db_trans item 'title' %}" class="w-full h-full object-cover" loading="lazy" />
+          <div class="overlay">
+            <span class="font-display text-gold text-xs uppercase tracking-widest">
+              {% for s in item.styles.all %}{% db_trans s "name" %}{% if not forloop.last %} · {% endif %}{% endfor %}
+            </span>
+            <h3 class="font-display text-neutral-100 text-lg mt-1">{% db_trans item "title" %}</h3>
+            {% if item.artist %}<p class="text-neutral-400 text-xs">{% static_trans "by" %} {{ item.artist.name }}</p>{% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-12 reveal">
+      <a href="{% url 'portfolio:list' %}" class="btn-gold">{% static_trans "View Full Portfolio" %}</a>
+    </div>
+  {% else %}
+    <p class="text-center text-neutral-500">{% static_trans "Portfolio coming soon — check back for fresh ink." %}</p>
+  {% endif %}
+</section>
+{% endif %}
+
+<!-- ░░ STYLES STRIP ░░ -->
+{% if styles and site.show_styles_strip %}
+<section class="border-y border-char bg-coal/50">
+  <div class="max-w-7xl mx-auto px-5 py-16">
+    <div class="flex flex-wrap justify-center gap-x-10 gap-y-6">
+      {% for style in styles %}
+        <a href="{% url 'portfolio:list' %}#{{ style.slug }}"
+           class="font-gothic text-3xl md:text-4xl text-neutral-600 hover:text-gold transition-colors">
+          {% db_trans style "name" %}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ░░ ARTISTS TEASER ░░ -->
+{% if artists and site.show_artists_teaser %}
+<section class="max-w-7xl mx-auto px-5 py-24">
+  <div class="flex flex-col items-center text-center mb-14 reveal">
+    <p class="eyebrow mb-3">{% db_trans site "artists_eyebrow" as art_eyebrow %}{{ art_eyebrow|default:"The Coven" }}</p>
+    <h2 class="section-title text-4xl md:text-5xl text-neutral-100">{% db_trans site "artists_title" as art_title %}{{ art_title|default:"Meet Our Artists" }}</h2>
+    <div class="rule mt-6"></div>
+  </div>
+
+  <div data-reveal-grid class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for artist in artists %}
+      <a href="{{ artist.get_absolute_url }}" class="ink-card group block">
+        <div class="aspect-[3/4] overflow-hidden">
+          {% if artist.avatar %}
+            <img src="{{ artist.avatar.url }}" alt="{{ artist.name }}" class="w-full h-full object-cover" loading="lazy" />
+          {% else %}
+            <div class="w-full h-full flex items-center justify-center bg-char font-gothic text-6xl text-neutral-700">
+              {{ artist.name|first }}
+            </div>
+          {% endif %}
+        </div>
+        <div class="p-4 text-center">
+          <h3 class="font-display text-lg text-neutral-100 group-hover:text-gold transition-colors">{{ artist.name }}</h3>
+          <p class="text-xs uppercase tracking-widest text-blood mt-1">{% db_trans artist "role" %}</p>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- ░░ CTA BAND ░░ -->
+<section class="relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-r from-blood/30 via-ink to-blood/30"></div>
+  <div class="relative max-w-4xl mx-auto px-5 py-24 text-center reveal">
+    <h2 class="font-gothic text-5xl md:text-6xl text-neutral-100">{% db_trans site "cta_band_title" as band_title %}{{ band_title|default:"Ready for your next piece?" }}</h2>
+    <p class="mt-6 text-neutral-400 max-w-xl mx-auto">{% db_trans site "cta_band_text" %}</p>
+    <a href="{% url 'core:book' %}" class="btn-gold mt-10">{% db_trans site "cta_band_label" as band_lbl %}{{ band_lbl|default:"Book Appointment" }}</a>
+  </div>
+</section>
+
+{% endblock %}

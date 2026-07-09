@@ -1,0 +1,36 @@
+{% extends "dashboard/base.html" %}
+{% block page_title %}Artists{% endblock %}
+{% block dashboard_content %}
+<div class="dash-card">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="font-display text-sm uppercase tracking-widest text-neutral-300">Artists</h2>
+    <a href="{% url 'dashboard:artist_create' %}" class="btn-primary">+ Add Artist</a>
+  </div>
+  <table class="dash-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Account</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for artist in artists %}
+      <tr>
+        <td class="text-neutral-300">{{ artist.full_name }}</td>
+        <td>{{ artist.role_en }}</td>
+        <td>{% if artist.user %}<span class="text-gold text-xs">{{ artist.user.username }}</span>{% else %}<span class="text-neutral-700 text-xs">No login</span>{% endif %}</td>
+        <td>
+          <a href="{% url 'dashboard:artist_edit' artist.pk %}" class="btn-primary py-1 px-3 text-[10px]">Edit</a>
+          <a href="{% url 'dashboard:artist_delete' artist.pk %}" class="btn-danger py-1 px-3 text-[10px] ml-2"
+             onclick="return confirm('Delete {{ artist.full_name }}?')">Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-neutral-600 text-center py-8">No artists yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
