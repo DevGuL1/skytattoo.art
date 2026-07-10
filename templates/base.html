@@ -74,33 +74,26 @@
       </div>
 
       {% else %}
-      <!-- ── SUB-PAGES: gothic ornament drawn stroke-by-stroke ── -->
-      <svg id="loader-ornament" data-ornament="{{ request.path|length|divisibleby:3|yesno:'0,1,2'|default:'0' }}"
-           viewBox="0 0 160 160" fill="none" stroke="#c5a028"
-           stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"
-           class="w-36 h-36">
-        <!-- Compass rose / mandala ornament (same for all sub-pages, JS picks variant) -->
-        <!-- Outer ring -->
-        <circle cx="80" cy="80" r="68"/>
-        <!-- Inner ring -->
-        <circle cx="80" cy="80" r="46"/>
-        <!-- Cardinal spokes -->
-        <line x1="80" y1="12" x2="80" y2="148"/>
-        <line x1="12" y1="80" x2="148" y2="80"/>
-        <!-- Diagonal spokes -->
-        <line x1="32" y1="32" x2="128" y2="128"/>
-        <line x1="128" y1="32" x2="32" y2="128"/>
-        <!-- Petal tips (N, E, S, W) -->
-        <path d="M80 12 Q72 40 80 34 Q88 40 80 12Z"/>
-        <path d="M148 80 Q120 72 126 80 Q120 88 148 80Z"/>
-        <path d="M80 148 Q88 120 80 126 Q72 120 80 148Z"/>
-        <path d="M12 80 Q40 88 34 80 Q40 72 12 80Z"/>
-        <!-- Centre gem -->
-        <circle cx="80" cy="80" r="8"/>
-        <circle cx="80" cy="80" r="4" fill="#8B0000" stroke="none"/>
-        <!-- Small corner diamonds -->
-        <path d="M80 34 L86 80 L80 126 L74 80 Z"/>
-      </svg>
+      <!-- ── SUB-PAGES: random gothic symbol drawn by the tattoo gun ── -->
+      <div id="loader-symbol-wrap" class="relative w-40 h-40">
+        <svg id="loader-ornament"
+             viewBox="0 0 160 160" fill="none" stroke="#c5a028"
+             stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"
+             class="absolute inset-0 w-full h-full">
+          <g id="loader-symbol-layer"></g>
+        </svg>
+        <div id="loader-symbol-gun" class="absolute pointer-events-none select-none opacity-0" style="left:0;top:0;z-index:20;">
+          <svg class="w-14 h-14 text-gold" style="animation:buzz 0.07s infinite;"
+               viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="18" y="14" width="10" height="16" rx="1" fill="currentColor" fill-opacity="0.2"/>
+            <rect x="30" y="14" width="10" height="16" rx="1" fill="currentColor" fill-opacity="0.2"/>
+            <path d="M10 10h36v6H10zM14 16v18a4 4 0 004 4h18a4 4 0 004-4V16"/>
+            <path d="M22 10V6h14v4M29 6v4" stroke-width="2"/>
+            <rect x="25" y="34" width="8" height="16" rx="1" fill="currentColor"/>
+            <path d="M29 50v8l-1.5 2.5 3 0-1.5-2.5z" fill="currentColor"/>
+          </svg>
+        </div>
+      </div>
       <p class="font-display text-[9px] uppercase tracking-[0.3em] text-neutral-700 mt-6">{% static_trans "Gothic ink. Timeless art." %}</p>
       {% endif %}
 
@@ -329,8 +322,11 @@
       const loader   = document.getElementById('loading-screen');
       if (!loader) return;
       document.body.style.overflow = 'hidden';
+      let dismissed = false;
 
       function dismiss() {
+        if (dismissed) return;
+        dismissed = true;
         loader.style.transition = 'opacity 0.5s';
         loader.style.opacity = '0';
         setTimeout(() => {
@@ -353,10 +349,16 @@
       if (reveal && gun) {
         // ── HOME: needle-tip rides the reveal edge exactly ──
         const wrap     = document.getElementById('loader-text-wrap');
-        const fullW    = wrap ? wrap.offsetWidth - 64 : 300; // 64 = 2×px-8
+        const text     = document.getElementById('loader-text');
+        const textLeft = text ? text.offsetLeft : 32;
+        const fullW    = text ? text.getBoundingClientRect().width : (wrap ? wrap.offsetWidth - 64 : 300);
         const NEEDLE_X = 29; // px from left edge of 64×64 SVG to needle tip
 
-        // Initially gun is at left:-29px so needle tip is at x=0
+        if (reveal) reveal.style.left = textLeft + 'px';
+        const revealLeft = () => reveal ? reveal.offsetLeft : textLeft;
+        if (gun) gun.style.left = (revealLeft() - NEEDLE_X) + 'px';
+
+        // Initially gun needle tip is pinned to the first letter.
         gsap.set(gun, { opacity: 0 });
         gsap.set(reveal, { width: 0 });
 
@@ -375,31 +377,105 @@
             onUpdate: function () {
               // keep gun.left = revealWidth - NEEDLE_X
               const w = parseFloat(gsap.getProperty(reveal, 'width'));
-              gun.style.left = (w - NEEDLE_X) + 'px';
+              gun.style.left = (revealLeft() + w - NEEDLE_X) + 'px';
             }
           })
           // 3. brief pause, then fade gun out
           .to(gun, { opacity: 0, duration: 0.25, ease: 'power1.in' }, '+=0.2');
 
       } else if (ornament) {
-        // ── SUB-PAGES: draw gothic ornament SVG paths ──
-        const paths = ornament.querySelectorAll('path, circle, line, polyline, rect');
-        gsap.set(paths, { strokeDasharray: function(i, el) {
+        // ── SUB-PAGES: draw a random gothic symbol with the tattoo gun ──
+        const layer = document.getElementById('loader-symbol-layer');
+        const symbolGun = document.getElementById('loader-symbol-gun');
+        const ns = 'http://www.w3.org/2000/svg';
+        const symbols = [
+          [
+            'M80 14 C71 45 71 61 80 76 C89 61 89 45 80 14 Z',
+            'M80 146 C89 115 89 99 80 84 C71 99 71 115 80 146 Z',
+            'M14 80 C45 71 61 71 76 80 C61 89 45 89 14 80 Z',
+            'M146 80 C115 89 99 89 84 80 C99 71 115 71 146 80 Z',
+            'M44 44 L116 116 M116 44 L44 116 M80 35 L80 125 M35 80 L125 80',
+            'M80 62 L92 80 L80 98 L68 80 Z'
+          ],
+          [
+            'M107 30 C78 40 60 64 61 91 C62 119 85 137 113 128 C96 123 82 107 82 87 C82 66 92 47 107 30 Z',
+            'M52 118 C70 107 93 108 111 126',
+            'M92 48 C104 60 113 75 116 92',
+            'M76 58 L82 76 L99 78 L85 89 L90 106 L76 96 L61 106 L67 89 L53 78 L70 76 Z'
+          ],
+          [
+            'M80 14 L92 61 L84 61 L88 132 L80 148 L72 132 L76 61 L68 61 Z',
+            'M45 64 C60 54 100 54 115 64',
+            'M56 75 L104 75',
+            'M64 31 C70 39 90 39 96 31',
+            'M80 92 C67 101 62 116 63 134 M80 92 C93 101 98 116 97 134'
+          ],
+          [
+            'M80 78 C92 65 111 68 119 83 C128 101 111 124 83 131 C55 124 38 101 47 83 C55 68 74 65 80 78 Z',
+            'M80 78 C71 61 51 50 31 56',
+            'M80 78 C88 58 108 45 130 49',
+            'M74 88 C86 82 99 90 95 103 C91 119 65 116 65 99 C65 92 69 89 74 88 Z',
+            'M59 132 C68 116 92 116 101 132',
+            'M42 92 C30 99 25 113 27 128 M118 92 C130 99 135 113 133 128'
+          ],
+          [
+            'M20 80 C39 53 61 42 80 42 C99 42 121 53 140 80 C121 107 99 118 80 118 C61 118 39 107 20 80 Z',
+            'M63 80 C63 70 70 63 80 63 C90 63 97 70 97 80 C97 90 90 97 80 97 C70 97 63 90 63 80 Z',
+            'M80 55 L80 21 M80 105 L80 139 M47 61 L29 43 M113 61 L131 43 M47 99 L29 117 M113 99 L131 117',
+            'M80 69 L86 80 L80 91 L74 80 Z',
+            'M37 80 L20 80 M123 80 L140 80'
+          ]
+        ];
+
+        if (layer) {
+          const picked = symbols[Math.floor(Math.random() * symbols.length)];
+          picked.forEach(function(d, index) {
+            const path = document.createElementNS(ns, 'path');
+            path.setAttribute('d', d);
+            if (index === picked.length - 1) path.setAttribute('stroke', '#8B0000');
+            layer.appendChild(path);
+          });
+        }
+
+        const paths = ornament.querySelectorAll('path');
+        paths.forEach(function(el) {
           const len = el.getTotalLength ? el.getTotalLength() : 100;
-          el.style.strokeDasharray  = len;
+          el.style.strokeDasharray = len;
           el.style.strokeDashoffset = len;
-          return len;
-        }});
+        });
+
+        function moveSymbolGun(path, progress) {
+          if (!symbolGun || !path || !path.getTotalLength) return;
+          const len = path.getTotalLength();
+          const point = path.getPointAtLength(Math.max(0, Math.min(len, len * progress)));
+          const svgBox = ornament.getBoundingClientRect();
+          const wrapBox = ornament.parentElement.getBoundingClientRect();
+          const scaleX = svgBox.width / 160;
+          const scaleY = svgBox.height / 160;
+          const NEEDLE_X = 25;
+          const NEEDLE_Y = 52;
+          symbolGun.style.left = (svgBox.left - wrapBox.left + point.x * scaleX - NEEDLE_X) + 'px';
+          symbolGun.style.top = (svgBox.top - wrapBox.top + point.y * scaleY - NEEDLE_Y) + 'px';
+        }
 
         const tl = gsap.timeline({
           onComplete: () => { clearTimeout(fallback); dismiss(); }
         });
-        tl.to(paths, {
-          strokeDashoffset: 0,
-          duration: 1.8,
-          stagger: 0.12,
-          ease: 'power2.inOut'
+        if (symbolGun && paths.length) {
+          gsap.set(symbolGun, { opacity: 1 });
+          moveSymbolGun(paths[0], 0);
+        }
+        paths.forEach(function(path) {
+          const len = path.getTotalLength ? path.getTotalLength() : 120;
+          tl.to(path, {
+            strokeDashoffset: 0,
+            duration: Math.max(0.28, Math.min(0.62, len / 230)),
+            ease: 'power1.inOut',
+            onStart: function() { moveSymbolGun(path, 0); },
+            onUpdate: function() { moveSymbolGun(path, this.progress()); }
+          }, '+=0.03');
         });
+        tl.to(symbolGun, { opacity: 0, duration: 0.25, ease: 'power1.in' }, '+=0.1');
       } else {
         clearTimeout(fallback);
         dismiss();

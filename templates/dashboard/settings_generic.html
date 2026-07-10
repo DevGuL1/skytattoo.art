@@ -1,21 +1,23 @@
 {% extends "dashboard/base.html" %}
-{% block title %}{{ title }}{% endblock %}
-{% block heading %}{{ title }}{% endblock %}
 
-{% block content %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_hint %}
+  <p class="mt-1 text-xs text-neutral-600">Global site controls saved to the single Skytattoo settings row.</p>
+{% endblock %}
+
+{% block dashboard_content %}
 <form method="post" enctype="multipart/form-data" class="space-y-6">
   {% csrf_token %}
   {% for prefix, form in forms.items %}
-    <section class="card p-6">
-      <h2 class="font-display text-lg text-gold mb-5 capitalize">{{ prefix }}</h2>
+    <section class="dash-card">
+      <h3 class="font-display text-sm uppercase tracking-widest text-neutral-300 mb-6">{{ prefix|title }}</h3>
       {% include "dashboard/_fields.html" with form=form %}
     </section>
   {% endfor %}
   <div class="flex justify-end gap-3">
-    <a href="{% url 'dashboard:overview' %}" class="dbtn dbtn-ghost">Cancel</a>
-    <button class="dbtn dbtn-gold">Save changes</button>
+    <a href="{% url 'dashboard:overview' %}" class="btn-danger">Cancel</a>
+    <button class="btn-primary">Save changes</button>
   </div>
 </form>
 {% endblock %}
-
-The above content shows the entire, complete file contents of the requested file.

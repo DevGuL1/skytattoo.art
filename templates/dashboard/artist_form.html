@@ -1,2 +1,3 @@
 {% extends "dashboard/form_page.html" %}
-{% block form_title %}Artist{% endblock %}
+{% block form_title %}{% if artist %}Edit Artist{% else %}New Artist{% endif %}{% endblock %}
+{% block form_heading %}{% if artist %}Edit Artist{% else %}New Artist{% endif %}{% endblock %}

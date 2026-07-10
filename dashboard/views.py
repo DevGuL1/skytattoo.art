@@ -42,8 +42,38 @@ def nav_counts():
     }
 
 
+SECTION_BY_VIEW = {
+    "overview": "overview",
+    "home_settings": "home",
+    "about_settings": "about",
+    "branding_settings": "branding",
+    "contact_settings": "contact",
+    "artist_list": "artists",
+    "artist_create": "artists",
+    "artist_edit": "artists",
+    "portfolio_list": "portfolio",
+    "portfolio_create": "portfolio",
+    "portfolio_edit": "portfolio",
+    "style_list": "styles",
+    "style_create": "styles",
+    "style_edit": "styles",
+    "value_create": "about",
+    "value_edit": "about",
+    "booking_list": "bookings",
+    "message_list": "messages",
+    "language_list": "languages",
+    "language_create": "languages",
+    "language_edit": "languages",
+    "static_string_list": "strings",
+    "static_string_create": "strings",
+    "static_string_edit": "strings",
+}
+
+
 def dash_render(request, template, ctx=None):
     data = {**nav_counts()}
+    if request.resolver_match:
+        data["dashboard_section"] = SECTION_BY_VIEW.get(request.resolver_match.url_name, "")
     if ctx:
         data.update(ctx)
     return render(request, template, data)
@@ -92,6 +122,7 @@ def overview(request):
         "recent_messages": ContactMessage.objects.all()[:6],
         "featured_count": PortfolioItem.objects.filter(is_featured=True).count(),
         "top_styles": TattooStyle.objects.annotate(n=Count("portfolio_items")).order_by("-n")[:5],
+        "recent_items": PortfolioItem.objects.select_related("artist").prefetch_related("styles")[:6],
     }
     return dash_render(request, "dashboard/overview.html", ctx)
 
@@ -196,7 +227,9 @@ def artist_edit(request, pk=None):
         social = f.SocialPostFormSet(instance=artist)
     return dash_render(request, "dashboard/artist_form.html",
                        {"form": form, "formset": formset, "social": social,
-                        "artist": artist if pk else None})
+                        "artist": artist if pk else None,
+                        "cancel_url": reverse("dashboard:artist_list"),
+                        "submit_label": "Save artist"})
 
 
 @staff_required
@@ -226,7 +259,9 @@ def portfolio_edit(request, pk=None):
         messages.success(request, "Portfolio item saved.")
         return redirect("dashboard:portfolio_list")
     return dash_render(request, "dashboard/portfolio_form.html",
-                       {"form": form, "item": item if pk else None})
+                       {"form": form, "item": item if pk else None,
+                        "cancel_url": reverse("dashboard:portfolio_list"),
+                        "submit_label": "Save portfolio item"})
 
 
 @staff_required
@@ -255,7 +290,12 @@ def style_edit(request, pk=None):
         form.save()
         messages.success(request, "Style saved.")
         return redirect("dashboard:style_list")
-    return dash_render(request, "dashboard/style_form.html", {"form": form, "style": style if pk else None})
+    return dash_render(request, "dashboard/style_form.html", {
+        "form": form,
+        "style": style if pk else None,
+        "cancel_url": reverse("dashboard:style_list"),
+        "submit_label": "Save style",
+    })
 
 
 @staff_required
@@ -278,7 +318,12 @@ def value_edit(request, pk=None):
         form.save()
         messages.success(request, "Value saved.")
         return redirect("dashboard:about_settings")
-    return dash_render(request, "dashboard/value_form.html", {"form": form, "value": value if pk else None})
+    return dash_render(request, "dashboard/value_form.html", {
+        "form": form,
+        "value": value if pk else None,
+        "cancel_url": reverse("dashboard:about_settings"),
+        "submit_label": "Save value card",
+    })
 
 
 @staff_required
@@ -366,7 +411,9 @@ def language_edit(request, pk=None):
         messages.success(request, "Language saved successfully.")
         return redirect("dashboard:language_list")
     return dash_render(request, "dashboard/language_form.html",
-                       {"form": form, "lang": lang if pk else None})
+                       {"form": form, "lang": lang if pk else None,
+                        "cancel_url": reverse("dashboard:language_list"),
+                        "submit_label": "Save language"})
 
 
 @staff_required
@@ -406,7 +453,9 @@ def static_string_edit(request, pk=None):
         messages.success(request, "Static string translation saved.")
         return redirect("dashboard:static_string_list")
     return dash_render(request, "dashboard/static_string_form.html",
-                       {"form": form, "string": string_obj if pk else None})
+                       {"form": form, "string": string_obj if pk else None,
+                        "cancel_url": reverse("dashboard:static_string_list"),
+                        "submit_label": "Save string"})
 
 
 @staff_required

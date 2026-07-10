@@ -1,36 +1,50 @@
 {% extends "dashboard/base.html" %}
-{% block title %}Static Strings{% endblock %}
-{% block heading %}Static UI Translations{% endblock %}
-{% block actions %}<a href="{% url 'dashboard:static_string_create' %}" class="dbtn dbtn-gold">+ Add String</a>{% endblock %}
 
-{% block content %}
-<!-- Search -->
-<div class="mb-6">
-  <form method="get" class="flex gap-3 max-w-md">
-    <input type="text" name="q" value="{{ q }}" placeholder="Search strings…"
-           class="w-full bg-black/40 border border-neutral-800 focus:border-gold text-neutral-100 placeholder-neutral-500 rounded-md px-4 py-2 outline-none text-sm transition-colors" />
-    <button type="submit" class="dbtn dbtn-gold !py-2 !px-4 text-sm">Search</button>
-    {% if q %}
-      <a href="{% url 'dashboard:static_string_list' %}" class="dbtn dbtn-ghost !py-2 !px-4 text-sm">Clear</a>
-    {% endif %}
+{% block title %}UI Strings{% endblock %}
+{% block page_title %}Static UI Strings{% endblock %}
+{% block page_hint %}
+  <p class="mt-1 text-xs text-neutral-600">Reusable labels from navigation, buttons, forms and public page microcopy.</p>
+{% endblock %}
+{% block page_actions %}<a href="{% url 'dashboard:static_string_create' %}" class="btn-primary">+ Add String</a>{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+  <form method="get" class="dash-card flex flex-col sm:flex-row gap-3 sm:items-center">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search strings..."
+           class="w-full bg-black/40 border border-neutral-700 focus:border-gold text-neutral-100 placeholder-neutral-500 rounded-md px-4 py-2.5 outline-none transition-colors" />
+    <button type="submit" class="btn-primary">Search</button>
+    {% if q %}<a href="{% url 'dashboard:static_string_list' %}" class="btn-danger">Clear</a>{% endif %}
   </form>
-</div>
 
-<div class="card divide-y divide-char2">
-  {% for s in strings %}
-    <div class="flex items-center gap-4 p-4">
-      <div class="min-w-0 flex-1">
-        <p class="text-neutral-100 font-medium">{{ s.key }}</p>
-      </div>
-      <div class="flex gap-2">
-        <a href="{% url 'dashboard:static_string_edit' s.pk %}" class="dbtn dbtn-ghost !py-1.5 !px-3">Edit</a>
-        <form method="post" action="{% url 'dashboard:static_string_delete' s.pk %}" onsubmit="return confirm('Delete this static string translation key? The site will fallback to displaying the key itself.')">
-          {% csrf_token %}<button class="dbtn dbtn-ghost !py-1.5 !px-3 hover:!text-bloodlight hover:!border-blood">Delete</button>
-        </form>
-      </div>
-    </div>
-  {% empty %}
-    <div class="p-10 text-center text-neutral-500">No static strings found. Visit public pages to auto-register UI strings!</div>
-  {% endfor %}
+  <div class="dash-card">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th>Base text</th>
+          <th>Key</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in strings %}
+          <tr>
+            <td class="text-neutral-300">{{ s.key }}</td>
+            <td class="font-mono text-xs text-neutral-600">staticstring:{{ s.pk }}:key</td>
+            <td>
+              <div class="flex gap-2 justify-end">
+                <a href="{% url 'dashboard:static_string_edit' s.pk %}" class="btn-primary py-1 px-3 text-[10px]">Edit</a>
+                <form method="post" action="{% url 'dashboard:static_string_delete' s.pk %}" onsubmit="return confirm('Delete this UI string? The site will fall back to displaying the base text.')">
+                  {% csrf_token %}
+                  <button class="btn-danger py-1 px-3 text-[10px]">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3" class="text-neutral-600 text-center py-8">No static strings found. Open public pages once to auto-register their labels.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

@@ -91,7 +91,10 @@ class TranslatableModelForm(StyledModelForm):
 
         from core.models import Language, Translation
 
-        self.languages = list(Language.objects.filter(is_active=True, is_default=False))
+        # The stored model fields are the base English copy. Public default
+        # language can still be Georgian, so expose every active non-English
+        # language as an editable translation tab.
+        self.languages = list(Language.objects.filter(is_active=True).exclude(code="en"))
 
         for field_name in self.translatable_fields:
             if field_name not in self.fields:

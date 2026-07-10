@@ -79,6 +79,11 @@ STATIC_TEXTS_FALLBACK = {
         "Dashboard Login": "დეშბორდი",
         "Enter Coven": "შესვლა",
         "All rights reserved.": "ყველა უფლება დაცულია.",
+        "The Team": "გუნდი",
+        "Get In Touch": "დაგვიკავშირდით",
+        "Send a message": "შეტყობინების გაგზავნა",
+        "Visit the studio": "ეწვიეთ სტუდიას",
+        "Map — add a Google Maps embed in the admin.": "რუკა — დაამატეთ Google Maps embed დეშბორდიდან.",
     },
     "ru": {
         "Home": "Главная",
@@ -147,6 +152,12 @@ STATIC_TEXTS_FALLBACK = {
         "Follow on TikTok": "Подписаться в TikTok",
         "In Motion": "В движении",
         "Video Reels": "Видео",
+        "All rights reserved.": "Все права защищены.",
+        "The Team": "Команда",
+        "Get In Touch": "Связаться",
+        "Send a message": "Отправить сообщение",
+        "Visit the studio": "Посетить студию",
+        "Map — add a Google Maps embed in the admin.": "Карта — добавьте Google Maps embed из панели.",
     }
 }
 
@@ -222,6 +233,19 @@ def static_trans(context, text):
     lang_dict = STATIC_TEXTS_FALLBACK.get(lang_code, {})
     translated = lang_dict.get(text)
     if translated:
+        if string_obj:
+            try:
+                from core.models import Language, Translation
+                lang = Language.objects.filter(code=lang_code).first()
+                if lang:
+                    key = f"staticstring:{string_obj.pk}:key"
+                    Translation.objects.get_or_create(
+                        language=lang,
+                        object_key=key,
+                        defaults={"text": translated},
+                    )
+            except Exception:
+                pass
         return translated
         
     # Fallback to the key text itself (English)

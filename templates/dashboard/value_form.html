@@ -1,2 +1,3 @@
 {% extends "dashboard/form_page.html" %}
-{% block form_title %}Service{% endblock %}
+{% block form_title %}{% if value %}Edit Value Card{% else %}New Value Card{% endif %}{% endblock %}
+{% block form_heading %}{% if value %}Edit Value Card{% else %}New Value Card{% endif %}{% endblock %}

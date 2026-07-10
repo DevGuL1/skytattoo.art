@@ -1,99 +1,65 @@
-{% extends 'dashboard/base.html' %}
-{% load static %}
+{% extends "dashboard/base.html" %}
+
+{% block title %}Bookings{% endblock %}
+{% block page_title %}Booking Requests{% endblock %}
+
 {% block dashboard_content %}
-<div class="container-fluid py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Bookings</h2>
+<div class="dash-card">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="font-display text-sm uppercase tracking-widest text-neutral-300">Bookings</h2>
+    <span class="font-display text-xs text-gold">{{ bookings|length }}</span>
   </div>
-
-  <!-- Filters -->
-  <form method="get" class="row g-2 mb-3">
-    <div class="col-auto">
-      <select name="status" class="form-select form-select-sm">
-        <option value="">All Statuses</option>
-        {% for val, label in status_choices %}
-        <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-auto">
-      <select name="resource" class="form-select form-select-sm">
-        <option value="">All Resources</option>
-        {% for r in resources %}
-        <option value="{{ r.pk }}" {% if resource_filter == r.pk|stringformat:"s" %}selected{% endif %}>{{ r.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-auto">
-      <button type="submit" class="ic-btn ic-btn-secondary">Filter</button>
-      <a href="{% url 'booking:booking-list' %}" class="ic-btn ic-btn-ghost ms-1">Clear</a>
-    </div>
-  </form>
-
-  <div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-      <table class="table table-hover mb-0">
-        <thead class="table-light">
+  <div class="overflow-x-auto">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Contact</th>
+          <th>Artist</th>
+          <th>Style</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in bookings %}
           <tr>
-            <th>Reference</th>
-            <th>Guest</th>
-            <th>Resource</th>
-            <th>Check-in</th>
-            <th>Check-out</th>
-            <th>Status</th>
-            <th class="text-end">Total</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for booking in page_obj %}
-          <tr>
-            <td><a href="{% url 'booking:booking-detail' booking.pk %}" class="fw-bold text-decoration-none">{{ booking.booking_reference }}</a></td>
-            <td>
-              <div>{{ booking.guest_name }}</div>
-              <small class="text-muted">{{ booking.guest_email }}</small>
+            <td class="text-neutral-300">
+              {{ booking.name }}
+              {% if booking.description %}<p class="text-xs text-neutral-600 mt-1">{{ booking.description|truncatechars:80 }}</p>{% endif %}
             </td>
-            <td>{{ booking.resource.name }}</td>
-            <td>{{ booking.check_in }}</td>
-            <td>{{ booking.check_out }}</td>
             <td>
-              {% if booking.status == 'confirmed' %}
-                <span class="badge bg-success">{{ booking.get_status_display }}</span>
-              {% elif booking.status == 'cancelled' or booking.status == 'no_show' %}
-                <span class="badge bg-danger">{{ booking.get_status_display }}</span>
-              {% elif booking.status == 'pending' %}
-                <span class="badge bg-warning text-dark">{{ booking.get_status_display }}</span>
-              {% elif booking.status == 'checked_in' %}
-                <span class="badge bg-info text-dark">{{ booking.get_status_display }}</span>
-              {% else %}
-                <span class="badge bg-secondary">{{ booking.get_status_display }}</span>
-              {% endif %}
+              <a href="mailto:{{ booking.email }}" class="hover:text-gold">{{ booking.email }}</a>
+              {% if booking.phone %}<p class="text-xs text-neutral-500 mt-1">{{ booking.phone }}</p>{% endif %}
             </td>
-            <td class="text-end fw-bold">{{ booking.total_price }}</td>
-            <td class="text-end">
-              <a href="{% url 'booking:booking-detail' booking.pk %}" class="ic-btn ic-btn-ghost ic-btn-sm">View</a>
+            <td>{% if booking.artist %}{{ booking.artist.name }}{% else %}<span class="text-neutral-600">-</span>{% endif %}</td>
+            <td>{% if booking.style %}{{ booking.style.name }}{% else %}<span class="text-neutral-600">-</span>{% endif %}</td>
+            <td>{% if booking.preferred_date %}{{ booking.preferred_date }}{% else %}<span class="text-neutral-600">-</span>{% endif %}</td>
+            <td>
+              <form method="post" action="{% url 'dashboard:booking_update' booking.pk %}">
+                {% csrf_token %}
+                <select name="status" class="bg-black/40 border border-neutral-700 focus:border-gold text-neutral-100 rounded-md px-3 py-2 text-xs outline-none" onchange="this.form.submit()">
+                  {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if booking.status == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+            </td>
+            <td>{{ booking.created_at|date:"Y-m-d H:i" }}</td>
+            <td>
+              <form method="post" action="{% url 'dashboard:booking_delete' booking.pk %}" onsubmit="return confirm('Delete this booking request?')">
+                {% csrf_token %}
+                <button class="btn-danger py-1 px-3 text-[10px]">Delete</button>
+              </form>
             </td>
           </tr>
-          {% empty %}
-          <tr><td colspan="8" class="text-center text-muted py-5">No bookings found.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+        {% empty %}
+          <tr><td colspan="8" class="text-neutral-600 text-center py-8">No booking requests yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-
-  {% if page_obj.has_other_pages %}
-  <nav class="mt-3">
-    <ul class="pagination pagination-sm">
-      {% if page_obj.has_previous %}
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}&resource={{ resource_filter }}">‹</a></li>
-      {% endif %}
-      <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
-      {% if page_obj.has_next %}
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}&resource={{ resource_filter }}">›</a></li>
-      {% endif %}
-    </ul>
-  </nav>
-  {% endif %}
 </div>
 {% endblock %}

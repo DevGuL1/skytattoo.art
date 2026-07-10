@@ -1,2 +1,3 @@
 {% extends "dashboard/form_page.html" %}
-{% block form_title %}Portfolio item{% endblock %}
+{% block form_title %}{% if item %}Edit Portfolio Item{% else %}New Portfolio Item{% endif %}{% endblock %}
+{% block form_heading %}{% if item %}Edit Portfolio Item{% else %}New Portfolio Item{% endif %}{% endblock %}

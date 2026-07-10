@@ -1,28 +1,48 @@
 {% extends "dashboard/base.html" %}
-{% block title %}Styles{% endblock %}
-{% block heading %}Tattoo styles{% endblock %}
-{% block actions %}<a href="{% url 'dashboard:style_create' %}" class="dbtn dbtn-gold">+ New style</a>{% endblock %}
 
-{% block content %}
-<div class="card divide-y divide-char2">
-  {% for s in styles %}
-    <div class="flex items-center gap-4 p-4">
-      <span class="h-8 w-8 rounded-md border border-char2 shrink-0" style="background:{{ s.color }}"></span>
-      <div class="min-w-0 flex-1">
-        <p class="text-neutral-100">{{ s.name }}</p>
-        <p class="text-xs text-neutral-500">{{ s.n }} piece{{ s.n|pluralize }} · <span class="text-neutral-600">{{ s.slug }}</span></p>
-      </div>
-      <div class="flex gap-2">
-        <a href="{% url 'dashboard:style_edit' s.pk %}" class="dbtn dbtn-ghost !py-1.5 !px-3">Edit</a>
-        <form method="post" action="{% url 'dashboard:style_delete' s.pk %}" onsubmit="return confirm('Delete {{ s.name|escapejs }}? Portfolio pieces keep their other styles.')">
-          {% csrf_token %}<button class="dbtn dbtn-ghost !py-1.5 !px-3 hover:!text-bloodlight hover:!border-blood">Delete</button>
-        </form>
-      </div>
-    </div>
-  {% empty %}
-    <div class="p-10 text-center text-neutral-500">No styles yet.</div>
-  {% endfor %}
+{% block title %}Styles{% endblock %}
+{% block page_title %}Tattoo Styles{% endblock %}
+{% block page_actions %}<a href="{% url 'dashboard:style_create' %}" class="btn-primary">+ New Style</a>{% endblock %}
+
+{% block dashboard_content %}
+<div class="dash-card">
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="font-display text-sm uppercase tracking-widest text-neutral-300">Styles</h2>
+    <span class="font-display text-xs text-gold">{{ styles|length }}</span>
+  </div>
+  <table class="dash-table">
+    <thead>
+      <tr>
+        <th>Color</th>
+        <th>Name</th>
+        <th>Slug</th>
+        <th>Pieces</th>
+        <th>Description</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in styles %}
+        <tr>
+          <td><span class="block h-8 w-8 rounded border border-neutral-800" style="background:{{ s.color }}"></span></td>
+          <td class="text-neutral-300">{{ s.name }}</td>
+          <td class="font-mono text-xs">{{ s.slug }}</td>
+          <td>{{ s.n }}</td>
+          <td>{{ s.description|truncatechars:90|default:"-" }}</td>
+          <td>
+            <div class="flex gap-2 justify-end">
+              <a href="{% url 'dashboard:style_edit' s.pk %}" class="btn-primary py-1 px-3 text-[10px]">Edit</a>
+              <form method="post" action="{% url 'dashboard:style_delete' s.pk %}" onsubmit="return confirm('Delete {{ s.name|escapejs }}? Portfolio pieces keep their other styles.')">
+                {% csrf_token %}
+                <button class="btn-danger py-1 px-3 text-[10px]">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="text-neutral-600 text-center py-8">No styles yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% endblock %}
-
-The above content shows the entire, complete file contents of the requested file.
