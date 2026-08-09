@@ -2,62 +2,138 @@
 {% block page_title %}Portfolio{% endblock %}
 {% block page_actions %}<a href="{% url 'dashboard:portfolio_create' %}" class="btn-primary">+ Add Item</a>{% endblock %}
 {% block dashboard_content %}
-<div class="dash-card">
-  <div class="flex items-center justify-between mb-5">
-    <h2 class="font-display text-sm uppercase tracking-widest text-neutral-300">Portfolio Items</h2>
-    <span class="font-display text-xs text-gold">{{ items|length }}</span>
-  </div>
-  <table class="dash-table">
-    <thead>
-      <tr>
-        <th>Image</th>
-        <th>Title</th>
-        <th>Artist</th>
-        <th>Styles</th>
-        <th>Featured</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in items %}
-      <tr>
-        <td>
-          {% if item.image %}
-          <img src="{{ item.image.url }}" alt="" class="w-14 h-14 object-cover rounded border border-neutral-800">
-          {% else %}
-          <div class="w-14 h-14 bg-char rounded border border-neutral-800 flex items-center justify-center text-neutral-700 text-xs">—</div>
-          {% endif %}
-        </td>
-        <td class="text-neutral-300">{{ item.title }}</td>
-        <td>{% if item.artist %}{{ item.artist.name }}{% else %}<span class="text-neutral-600">-</span>{% endif %}</td>
-        <td>
-          {% for style in item.styles.all %}
-            <span class="inline-flex items-center rounded border border-neutral-800 px-2 py-1 text-[10px] uppercase tracking-wider text-neutral-400">{{ style.name }}</span>
+<form method="post" action="{% url 'dashboard:portfolio_bulk_delete' %}" id="bulk-delete-form" onsubmit="return confirmBulkDelete();">
+  {% csrf_token %}
+
+  <div class="dash-card">
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-neutral-800">
+      <div class="flex items-center gap-3">
+        <h2 class="font-display text-sm uppercase tracking-widest text-neutral-300">Portfolio Items</h2>
+        <span class="bg-char text-gold px-2.5 py-0.5 rounded border border-neutral-800 text-xs font-mono">{{ items|length }}</span>
+      </div>
+
+      <!-- Bulk Actions Bar -->
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <span class="text-xs text-neutral-400 font-mono">
+          მონიშნულია: <strong id="selected-count" class="text-gold font-bold">0</strong>
+        </span>
+        <button type="submit" id="bulk-delete-btn" disabled class="btn-danger py-1.5 px-4 text-xs font-semibold uppercase tracking-wider opacity-50 cursor-not-allowed transition-all">
+          🗑️ მონიშნულების წაშლა
+        </button>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="dash-table w-full text-left">
+        <thead>
+          <tr class="border-b border-neutral-800 text-neutral-400 text-xs uppercase tracking-wider">
+            <th class="w-10 text-center py-3">
+              <input type="checkbox" id="select-all" class="w-4 h-4 accent-gold bg-char border-neutral-700 rounded cursor-pointer" title="Select All">
+            </th>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Artist</th>
+            <th>Styles</th>
+            <th>Featured</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-800/60">
+          {% for item in items %}
+          <tr class="hover:bg-neutral-900/40 transition-colors">
+            <td class="text-center py-3">
+              <input type="checkbox" name="selected_ids" value="{{ item.pk }}" class="item-checkbox w-4 h-4 accent-gold bg-char border-neutral-700 rounded cursor-pointer">
+            </td>
+            <td>
+              {% if item.image %}
+              <img src="{{ item.image.url }}" alt="" class="w-14 h-14 object-cover rounded border border-neutral-800">
+              {% else %}
+              <div class="w-14 h-14 bg-char rounded border border-neutral-800 flex items-center justify-center text-neutral-700 text-xs">—</div>
+              {% endif %}
+            </td>
+            <td class="text-neutral-200 font-medium max-w-xs truncate">{{ item.title }}</td>
+            <td>{% if item.artist %}<span class="text-gold font-medium">{{ item.artist.name }}</span>{% else %}<span class="text-neutral-600">-</span>{% endif %}</td>
+            <td>
+              {% for style in item.styles.all %}
+                <span class="inline-flex items-center rounded border border-neutral-800 bg-neutral-900/80 px-2 py-0.5 text-[10px] uppercase tracking-wider text-neutral-300 mr-1">{{ style.name }}</span>
+              {% empty %}
+                <span class="text-neutral-600">-</span>
+              {% endfor %}
+            </td>
+            <td>
+              {% if item.is_featured %}
+                <span class="text-[10px] uppercase tracking-widest text-gold font-bold">Yes</span>
+              {% else %}
+                <span class="text-[10px] uppercase tracking-widest text-neutral-600">No</span>
+              {% endif %}
+            </td>
+            <td class="text-right">
+              <div class="flex gap-2 justify-end">
+                <a href="{% url 'dashboard:portfolio_edit' item.pk %}" class="btn-primary py-1 px-3 text-[10px]">Edit</a>
+              </div>
+            </td>
+          </tr>
           {% empty %}
-            <span class="text-neutral-600">-</span>
+          <tr>
+            <td colspan="7" class="text-neutral-600 text-center py-10">No portfolio items found.</td>
+          </tr>
           {% endfor %}
-        </td>
-        <td>
-          {% if item.is_featured %}
-            <span class="text-[10px] uppercase tracking-widest text-gold">Yes</span>
-          {% else %}
-            <span class="text-[10px] uppercase tracking-widest text-neutral-600">No</span>
-          {% endif %}
-        </td>
-        <td>
-          <div class="flex gap-2 justify-end">
-            <a href="{% url 'dashboard:portfolio_edit' item.pk %}" class="btn-primary py-1 px-3 text-[10px]">Edit</a>
-            <form method="post" action="{% url 'dashboard:portfolio_delete' item.pk %}" onsubmit="return confirm('Delete this portfolio item?')">
-              {% csrf_token %}
-              <button class="btn-danger py-1 px-3 text-[10px]">Delete</button>
-            </form>
-          </div>
-        </td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="6" class="text-neutral-600 text-center py-8">No portfolio items found.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</form>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all');
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+    const selectedCountSpan = document.getElementById('selected-count');
+
+    function updateBulkState() {
+      const checkedCount = document.querySelectorAll('.item-checkbox:checked').length;
+      selectedCountSpan.textContent = checkedCount;
+
+      if (checkedCount > 0) {
+        bulkDeleteBtn.disabled = false;
+        bulkDeleteBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      } else {
+        bulkDeleteBtn.disabled = true;
+        bulkDeleteBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+
+      if (itemCheckboxes.length > 0 && checkedCount === itemCheckboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+      } else if (checkedCount > 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+      } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+      }
+    }
+
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener('change', function() {
+        itemCheckboxes.forEach(cb => {
+          cb.checked = selectAllCheckbox.checked;
+        });
+        updateBulkState();
+      });
+    }
+
+    itemCheckboxes.forEach(cb => {
+      cb.addEventListener('change', updateBulkState);
+    });
+
+    window.confirmBulkDelete = function() {
+      const checkedCount = document.querySelectorAll('.item-checkbox:checked').length;
+      if (checkedCount === 0) return false;
+      return confirm(`დარწმუნებული ხართ, რომ გსურთ ${checkedCount} მონიშნული ნამუშევრის წაშლა?`);
+    };
+  });
+</script>
 {% endblock %}

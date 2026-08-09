@@ -282,6 +282,18 @@ def portfolio_delete(request, pk):
     return redirect("dashboard:portfolio_list")
 
 
+@staff_required
+def portfolio_bulk_delete(request):
+    if request.method == "POST":
+        ids = request.POST.getlist("selected_ids")
+        if ids:
+            deleted_count, _ = PortfolioItem.objects.filter(id__in=ids).delete()
+            messages.success(request, f"წარმატებით წაიშალა {deleted_count} ნამუშევარი.")
+        else:
+            messages.warning(request, "არცერთი ნამუშევარი არ იყო მონიშნული.")
+    return redirect("dashboard:portfolio_list")
+
+
 # ---------------------------------------------------------------------------
 # CRUD — Styles
 # ---------------------------------------------------------------------------
