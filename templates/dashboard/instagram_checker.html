@@ -1,0 +1,407 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Social Media Sync (Instagram & Facebook) — Dashboard{% endblock %}
+{% block page_title %}Social Media Sync (Instagram & Facebook){% endblock %}
+{% block page_hint %}<p class="text-xs text-neutral-500 font-display uppercase tracking-widest mt-0.5">ავტომატური შემოწმება & სინქრონიზაცია (tattooskystudio)</p>{% endblock %}
+
+{% block dashboard_content %}
+{% block content %}
+<div class="space-y-8">
+
+  <!-- Header & Action Bar -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-900 pb-6">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-3 h-3 rounded-full {% if config.is_auto_sync_enabled %}bg-emerald-500 shadow-lg shadow-emerald-500/40 animate-pulse{% else %}bg-amber-500{% endif %}"></span>
+        <h1 class="font-gothic text-2xl text-gold">Instagram & Facebook Sync Engine</h1>
+      </div>
+      <p class="font-body text-xs text-neutral-400 mt-1">
+        პოსტების ავტომატური შემოტანა <strong class="text-pink-400">@tattooskystudio</strong>-დან და Facebook გვერდიდან.
+      </p>
+    </div>
+
+    <!-- Manual Sync Now Button -->
+    <form method="post" action="{% url 'dashboard:instagram_sync_now' %}" class="flex items-center gap-3">
+      {% csrf_token %}
+      <button type="submit" class="btn-primary flex items-center gap-2.5 bg-gradient-to-r from-blood/90 via-pink-900/40 to-gold/30 border-gold hover:from-gold hover:to-blood hover:text-black transition-all shadow-xl shadow-blood/20 px-5 py-2.5">
+        <svg class="w-4 h-4 animate-spin-hover" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span class="font-gothic text-xs tracking-wider">Sync All (50 პოსტის შემოტანა)</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Meta Graph API & Social Accounts Configuration Box (Prominent & Dedicated) -->
+  <div class="dash-card border-gold/40 bg-black/80 shadow-2xl relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="flex items-center justify-between border-b border-neutral-800 pb-4 mb-6">
+      <div>
+        <h2 class="font-gothic text-xl text-gold flex items-center gap-2.5">
+          <svg class="w-5 h-5 text-gold" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          🔑 Meta Graph API & სოციალური გვერდების კონფიგურაცია
+        </h2>
+        <p class="text-xs text-neutral-400 mt-1">
+          გაწერეთ Meta API Access Token-ები და გვერდების ID-ები პირდაპირი, 100%-ით სტაბილური სინქრონიზაციისთვის.
+        </p>
+      </div>
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-gold/10 border border-gold/30 text-gold text-xs font-gothic uppercase tracking-wider">
+        Meta Graph API Config
+      </span>
+    </div>
+
+    <form method="post" class="space-y-6">
+      {% csrf_token %}
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Column 1: Social URLs & Access Tokens -->
+        <div class="space-y-4">
+          <h3 class="text-xs font-gothic text-gold/90 uppercase tracking-widest border-b border-neutral-900 pb-2">1. გვერდების ბმულები & Access Token-ები</h3>
+
+          <div>
+            <label class="dash-label">Instagram Account URL</label>
+            {{ config_form.instagram_account_url }}
+            <p class="text-[10px] text-neutral-500 mt-1">მაგ: https://www.instagram.com/tattooskystudio/</p>
+          </div>
+
+          <div>
+            <label class="dash-label">Facebook Page URL</label>
+            {{ config_form.facebook_page_url }}
+            <p class="text-[10px] text-neutral-500 mt-1">მაგ: https://www.facebook.com/tattooskystudio</p>
+          </div>
+
+          <div>
+            <label class="dash-label">Instagram / Meta Access Token (მთავარი ტოკენი)</label>
+            {{ config_form.instagram_access_token }}
+            <p class="text-[10px] text-neutral-400 mt-1">Meta Graph API Access Token (`developers.facebook.com`-იდან)</p>
+          </div>
+
+          <div>
+            <label class="dash-label">Facebook Page Access Token (არასავალდებულო)</label>
+            {{ config_form.facebook_access_token }}
+            <p class="text-[10px] text-neutral-500 mt-1">თუ Facebook Page-ს აქვს ცალკე Access Token</p>
+          </div>
+        </div>
+
+        <!-- Column 2: Account IDs & Schedule Settings -->
+        <div class="space-y-4">
+          <h3 class="text-xs font-gothic text-gold/90 uppercase tracking-widest border-b border-neutral-900 pb-2">2. Graph API ID-ები & ავტომატური განრიგი</h3>
+
+          <div>
+            <label class="dash-label">Instagram Business Account ID</label>
+            {{ config_form.instagram_account_id }}
+            <p class="text-[10px] text-neutral-500 mt-1">მაგ: 17841400000000000 (Meta Graph API ID)</p>
+          </div>
+
+          <div>
+            <label class="dash-label">Facebook Page ID</label>
+            {{ config_form.facebook_page_id }}
+            <p class="text-[10px] text-neutral-500 mt-1">მაგ: 100987654321000 (Facebook Graph API ID)</p>
+          </div>
+
+          <div>
+            <label class="dash-label">Instagram Session ID Cookie (Fallback)</label>
+            {{ config_form.instagram_session_id }}
+            <p class="text-[10px] text-neutral-500 mt-1">Instagram ბრაუზერის `sessionid` კუკი (API-ს ალტერნატივად)</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 pt-1">
+            <div>
+              <label class="dash-label">ავტომატური შემოწმება</label>
+              <div class="flex items-center gap-3 mt-2">
+                {{ config_form.is_auto_sync_enabled }}
+                <span class="text-xs text-neutral-300">ჩართული</span>
+              </div>
+            </div>
+            <div>
+              <label class="dash-label">ინტერვალი (საათებში)</label>
+              {{ config_form.sync_interval_hours }}
+              <p class="text-[10px] text-neutral-500 mt-1">24 = ყოველდღე, 48 = 2 დღეში</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex justify-end pt-4 border-t border-neutral-900">
+        <button type="submit" name="save_config" value="1" class="btn-primary flex items-center gap-2 px-8 py-3 bg-gold hover:bg-gold/90 text-black font-gothic font-bold text-sm rounded shadow-lg shadow-gold/20">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Meta API & სინქრონიზაციის პარამეტრების შენახვა</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Rule Explanation Banner -->
+  <div class="p-4 rounded-md border border-gold/30 bg-gold/5 flex items-start gap-3">
+    <svg class="w-5 h-5 text-gold shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="text-xs space-y-1">
+      <p class="font-gothic text-sm text-gold">პორტფოლიოში ასახვის წესი:</p>
+      <p class="text-neutral-300">
+        სოციალური მედიიდან შემოტანილი <strong>ყველა სურათი</strong> (თეგი ექნება თუ არა) ავტომატურად ხვდება <strong>მთლიან პორტფოლიოში</strong> (<code class="text-gold font-mono">/portfolio/</code>).
+      </p>
+      <p class="text-neutral-400">
+        თუ პოსტის აღწერაში მითითებულია არტისტის ჰეშტეგი (მაგ: <code class="text-emerald-400 font-mono">#avtosailor</code>), სურათი ასევე ავტომატურად მიენიჭება ამ არტისტს და გამოჩნდება მის პროფილშიც.
+      </p>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="dash-card border-neutral-800/90 bg-coal/90">
+      <p class="dash-label">Instagram Account</p>
+      <p class="font-mono text-xs text-pink-400 font-bold truncate mt-2" title="{{ config.instagram_account_url }}">
+        {{ config.instagram_account_url }}
+      </p>
+      <span class="text-[10px] text-neutral-500 block mt-0.5">Instagram Studio Page</span>
+    </div>
+
+    <div class="dash-card border-neutral-800/90 bg-coal/90">
+      <p class="dash-label">Facebook Page</p>
+      <p class="font-mono text-xs text-blue-400 font-bold truncate mt-2" title="{{ config.facebook_page_url }}">
+        {{ config.facebook_page_url }}
+      </p>
+      <span class="text-[10px] text-neutral-500 block mt-0.5">Facebook Studio Page</span>
+    </div>
+
+    <div class="dash-card border-neutral-800/90 bg-coal/90">
+      <p class="dash-label">ბოლო შემოწმების თარიღი</p>
+      <p class="font-body text-sm text-neutral-200 mt-2 font-mono">
+        {% if config.last_synced_at %}
+          {{ config.last_synced_at|date:"Y-m-d H:i" }}
+        {% else %}
+          ახალი
+        {% endif %}
+      </p>
+      <div class="mt-1">
+        {% if config.last_status == 'success' %}
+          <span class="text-[10px] text-emerald-400 font-medium">✓ სინქრონიზებული</span>
+        {% else %}
+          <span class="text-[10px] text-neutral-500">Idle</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="dash-card border-neutral-800/90 bg-coal/90">
+      <p class="dash-label">სულ შემოტანილი ნამუშევრები</p>
+      <p class="font-gothic text-2xl text-gold mt-1">{{ synced_items|length }}</p>
+      <span class="text-[10px] text-neutral-500">Instagram + Facebook</span>
+    </div>
+  </div>
+
+  <!-- Quick Single Post Importer Tool (Direct Paste) -->
+  <div class="dash-card border-neutral-800 bg-coal/80">
+    <h2 class="font-gothic text-lg text-gold mb-2 flex items-center gap-2">
+      <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      პირდაპირი პოსტის შემოტანა (Quick Importer)
+    </h2>
+    <p class="text-xs text-neutral-400 mb-4">
+      ჩასვით Instagram ან Facebook პოსტის / სურათის ლინკი და დააჭირეთ <strong>შემოტანას</strong>. სურათი დაუყოვნებლივ დაემატება პორტფოლიოში.
+    </p>
+
+    <form method="post" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+      {% csrf_token %}
+      <div class="md:col-span-2">
+        <label class="dash-label">პოსტის / სურათის ბმული (Post URL or Image URL)</label>
+        <input type="url" name="post_url" placeholder="https://www.instagram.com/p/C-X8VnOM...  ან  https://images.unsplash.com/..." required class="dash-input text-xs font-mono" />
+      </div>
+      <div>
+        <label class="dash-label">წყარო (Source)</label>
+        <select name="source" class="dash-input text-xs">
+          <option value="instagram">Instagram</option>
+          <option value="facebook">Facebook</option>
+        </select>
+      </div>
+      <div>
+        <label class="dash-label">აღწერა / ჰეშტეგი (არასავალდებულო)</label>
+        <input type="text" name="caption" placeholder="მაგ: Tattoo work #avtosailor" class="dash-input text-xs" />
+      </div>
+      <div class="md:col-span-4 flex justify-end">
+        <button type="submit" name="import_post" value="1" class="btn-primary flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>პოსტის შემოტანა პორტფოლიოში</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Artist Hashtags Input Form Table -->
+  <div class="dash-card border-neutral-800">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="font-gothic text-lg text-gold flex items-center gap-2">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          არტისტების Instagram & Facebook თეგების მინიჭება
+        </h2>
+        <p class="text-xs text-neutral-400 mt-1">
+          თუ პოსტს აქვს არტისტის თეგი (მაგ: <span class="text-emerald-400">#avtosailor</span>), მიენიჭება ამ არტისტს. თუ თეგი არ აქვს — შევა **მთლიან პორტფოლიოში**!
+        </p>
+      </div>
+    </div>
+
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <div class="overflow-x-auto">
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th class="w-1/3">არტისტი</th>
+              <th class="w-1/3">Instagram Username (@)</th>
+              <th class="w-1/3">არტისტის ჰეშტეგი (#)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for artist in artists_with_tags %}
+            <tr>
+              <td class="font-medium text-neutral-100">
+                <div class="flex items-center gap-2.5">
+                  {% if artist.avatar %}
+                    <img src="{{ artist.avatar.url }}" class="w-7 h-7 rounded-full object-cover border border-neutral-700" />
+                  {% else %}
+                    <div class="w-7 h-7 rounded-full bg-neutral-800 flex items-center justify-center text-xs text-gold">
+                      {{ artist.name|first }}
+                    </div>
+                  {% endif %}
+                  <div>
+                    <div class="text-sm font-gothic text-neutral-100">{{ artist.name }}</div>
+                    <div class="text-[10px] text-neutral-500">{{ artist.role|default:"Tattoo Artist" }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="relative">
+                  <span class="absolute left-3 top-2.5 text-neutral-500 text-xs font-mono">@</span>
+                  <input type="text" name="artist_username_{{ artist.pk }}" value="{{ artist.instagram_username }}" 
+                         placeholder="username" 
+                         class="dash-input pl-7 py-1.5 text-xs font-mono bg-black/50 border-neutral-800 focus:border-gold" />
+                </div>
+              </td>
+              <td>
+                <div class="relative">
+                  <span class="absolute left-3 top-2.5 text-emerald-500 text-xs font-mono">#</span>
+                  <input type="text" name="artist_tag_{{ artist.pk }}" value="{{ artist.instagram_hashtag }}" 
+                         placeholder="avtosailor" 
+                         class="dash-input pl-7 py-1.5 text-xs font-mono text-emerald-300 bg-black/50 border-neutral-800 focus:border-emerald-500" />
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="text-center py-6 text-neutral-500">აქტიური არტისტები არ მოიძებნა.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button type="submit" name="save_artist_tags" value="1" class="btn-primary flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>თეგების შენახვა</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Synced Works Preview Grid (Instagram + Facebook) -->
+  <div class="dash-card border-neutral-800">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="font-gothic text-lg text-gold flex items-center gap-2">
+          <svg class="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          შემოტანილი ნამუშევრები (Instagram & Facebook)
+        </h2>
+        <p class="text-xs text-neutral-400 mt-0.5">ყველა პოსტი ავტომატურად ჩანს საიტის მთლიან პორტფოლიოში</p>
+      </div>
+      <a href="{% url 'dashboard:portfolio_list' %}" class="text-xs text-gold hover:underline">
+        ყველას ნახვა პორტფოლიოში →
+      </a>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      {% for item in synced_items %}
+      <div class="group relative bg-black/60 border border-neutral-800 rounded-md overflow-hidden hover:border-gold/50 transition-colors">
+        <div class="aspect-square w-full overflow-hidden bg-neutral-900 relative">
+          {% if item.image %}
+            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          {% endif %}
+          <!-- Source Badge -->
+          <div class="absolute top-2 left-2">
+            {% if item.is_from_facebook %}
+              <span class="bg-blue-600/90 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">FB Page</span>
+            {% else %}
+              <span class="bg-gradient-to-r from-pink-600 to-purple-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">Instagram</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="p-2.5 text-xs">
+          <p class="font-medium text-neutral-200 truncate" title="{{ item.title }}">{{ item.title }}</p>
+          <div class="flex items-center justify-between mt-1.5 text-[10px] text-neutral-400">
+            <span class="text-gold">{{ item.artist.name|default:"SkyTattoo Studio" }}</span>
+            {% if item.instagram_permalink %}
+              <a href="{{ item.instagram_permalink }}" target="_blank" class="text-pink-400 hover:underline">Instagram ↗</a>
+            {% elif item.facebook_permalink %}
+              <a href="{{ item.facebook_permalink }}" target="_blank" class="text-blue-400 hover:underline">Facebook ↗</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-span-full py-10 text-center text-neutral-500 bg-black/30 rounded border border-neutral-900">
+        <svg class="w-8 h-8 text-neutral-600 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <p class="font-gothic text-sm text-neutral-300">შემოტანილი ნამუშევრები ჯერ არ არის.</p>
+        <p class="text-xs mt-1 text-neutral-500">დააჭირეთ <strong class="text-gold">Sync All (50 პოსტი)</strong>-ს.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Sync Logs Table -->
+  <div class="dash-card border-neutral-800">
+    <h2 class="font-gothic text-lg text-gold mb-4 flex items-center gap-2">
+      <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      სინქრონიზაციის ლოგები
+    </h2>
+    <div class="overflow-x-auto">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>თარიღი</th>
+            <th>სტატუსი</th>
+            <th>წამოღებული პოსტები</th>
+            <th>შექმნილი ნამუშევრები</th>
+            <th>დეტალები</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td class="whitespace-nowrap text-xs text-neutral-300 font-mono">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
+            <td>
+              {% if log.status == 'success' %}
+                <span class="text-xs text-emerald-400 font-medium">✓ წარმატებული</span>
+              {% else %}
+                <span class="text-xs text-rose-400 font-medium">✕ შეცდომა</span>
+              {% endif %}
+            </td>
+            <td class="font-mono text-xs text-neutral-300">{{ log.posts_fetched }}</td>
+            <td class="font-mono text-xs text-gold font-bold">{{ log.items_created }}</td>
+            <td class="text-xs font-mono text-neutral-400 max-w-md truncate" title="{{ log.details }}">
+              {{ log.details|linebreaksbr }}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-4 text-neutral-500">ლოგები არ მოიძებნა.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+{% endblock %}

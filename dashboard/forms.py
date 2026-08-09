@@ -9,7 +9,7 @@ from django.forms import inlineformset_factory
 
 from artists.models import Artist, Reel, SocialPost
 from core.models import BookingRequest, SiteSetting, StudioValue, Language, StaticString
-from portfolio.models import PortfolioItem, TattooStyle
+from portfolio.models import PortfolioImage, PortfolioItem, TattooStyle
 
 _TEXT = (
     "w-full bg-black/40 border border-neutral-700 focus:border-gold text-neutral-100 "
@@ -190,6 +190,17 @@ class HomeSectionsForm(TranslatableModelForm):
         ]
 
 
+class PortfolioDisplayForm(StyledModelForm):
+    class Meta:
+        model = SiteSetting
+        fields = [
+            "show_portfolio_style_filters",
+            "show_portfolio_color_filters",
+            "show_portfolio_size_filters",
+            "portfolio_cards_square",
+        ]
+
+
 class AboutForm(TranslatableModelForm):
     class Meta:
         model = SiteSetting
@@ -235,10 +246,23 @@ class ArtistForm(TranslatableModelForm):
         model = Artist
         fields = [
             "name", "role", "tagline", "bio", "avatar", "cover_image", "styles",
-            "instagram", "facebook", "tiktok", "email", "is_active", "order",
+            "instagram", "instagram_username", "instagram_hashtag", "facebook", "tiktok", "email", "is_active", "order",
         ]
         widgets = {"styles": forms.CheckboxSelectMultiple}
         translatable_fields = ["role", "tagline", "bio"]
+
+
+class InstagramSyncConfigForm(StyledModelForm):
+    class Meta:
+        from dashboard.models import InstagramSyncConfig
+        model = InstagramSyncConfig
+        fields = [
+            "instagram_account_url", "facebook_page_url", 
+            "instagram_access_token", "facebook_access_token",
+            "instagram_account_id", "facebook_page_id",
+            "instagram_session_id", "is_auto_sync_enabled", "sync_interval_hours"
+        ]
+
 
 
 class ReelForm(StyledModelForm):
@@ -277,6 +301,22 @@ class PortfolioItemForm(TranslatableModelForm):
         ]
         widgets = {"styles": forms.CheckboxSelectMultiple}
         translatable_fields = ["title", "description"]
+
+
+class PortfolioImageForm(StyledModelForm):
+    class Meta:
+        model = PortfolioImage
+        fields = ["image", "caption", "order", "is_active"]
+
+
+PortfolioImageFormSet = inlineformset_factory(
+    PortfolioItem,
+    PortfolioImage,
+    form=PortfolioImageForm,
+    extra=20,
+    max_num=20,
+    can_delete=True,
+)
 
 
 class TattooStyleForm(TranslatableModelForm):

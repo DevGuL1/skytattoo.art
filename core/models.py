@@ -76,6 +76,16 @@ class SiteSetting(models.Model):
     show_artists_teaser = models.BooleanField("Show artists section", default=True)
     show_styles_strip = models.BooleanField("Show styles strip", default=True)
 
+    # --- Portfolio page controls ---
+    show_portfolio_style_filters = models.BooleanField("Show portfolio style buttons", default=True)
+    show_portfolio_color_filters = models.BooleanField("Show portfolio colour buttons", default=False)
+    show_portfolio_size_filters = models.BooleanField("Show portfolio size buttons", default=False)
+    portfolio_cards_square = models.BooleanField(
+        "Use equal-height portfolio grid cards",
+        default=True,
+        help_text="Keeps portfolio listing cards aligned with no masonry gaps.",
+    )
+
     # --- Homepage · Closing CTA band ---
     cta_band_title = models.CharField(
         max_length=160, blank=True, default="Ready for your next piece?"

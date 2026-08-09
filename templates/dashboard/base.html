@@ -172,6 +172,10 @@
         <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Styles
       </a>
+      <a href="{% url 'dashboard:instagram_checker' %}" class="dash-link {% if dashboard_section == 'instagram' %}active{% endif %}">
+        <svg class="w-3.5 h-3.5 shrink-0 text-pink-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        Instagram Sync
+      </a>
 
       <p class="dash-section-head">Requests</p>
       <a href="{% url 'dashboard:booking_list' %}" class="dash-link {% if dashboard_section == 'bookings' %}active{% endif %}">
@@ -243,7 +247,9 @@
 
     <!-- Content -->
     <main class="flex-1 p-6">
-      {% block dashboard_content %}{% endblock %}
+      {% block dashboard_content %}
+        {% block content %}{% endblock %}
+      {% endblock %}
     </main>
   </div>
 

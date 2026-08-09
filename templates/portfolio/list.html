@@ -15,30 +15,36 @@
   {% if items %}
   <!-- Filters -->
   <div class="flex flex-col items-center gap-4 mb-10">
+    {% if site.show_portfolio_style_filters %}
     <div class="flex flex-wrap justify-center gap-2" data-filter-group="style">
       <button class="filter-chip is-active" data-filter="*">{% static_trans "All Styles" %}</button>
       {% for s in styles %}
         <button class="filter-chip" data-filter=".{{ s.slug }}" id="{{ s.slug }}">{% db_trans s "name" %}</button>
       {% endfor %}
     </div>
+    {% endif %}
+    {% if site.show_portfolio_color_filters or site.show_portfolio_size_filters %}
     <div class="flex flex-wrap justify-center gap-2" data-filter-group="color">
       <button class="filter-chip is-active" data-filter="*">{% static_trans "All" %}</button>
+      {% if site.show_portfolio_color_filters %}
       {% for value, label in colors %}
         <button class="filter-chip" data-filter=".c-{{ value }}">{{ label }}</button>
       {% endfor %}
+      {% endif %}
+      {% if site.show_portfolio_size_filters %}
       {% for value, label in sizes %}
         <button class="filter-chip" data-filter=".s-{{ value }}">{{ label }}</button>
       {% endfor %}
+      {% endif %}
     </div>
+    {% endif %}
   </div>
 
-  <!-- Masonry grid via CSS multi-columns (robust + responsive; no JS layout).
-       Filtering is handled by pf-filter.js which fades items in/out. -->
-  <div class="pf-grid columns-2 sm:columns-3 lg:columns-4 gap-4" data-pf-grid>
+  <div class="pf-grid grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5" data-pf-grid>
     {% for item in items %}
       <a href="{{ item.get_absolute_url }}"
-         class="pf-item ink-card block mb-4 break-inside-avoid {{ item.style_slugs }} c-{{ item.color }} s-{{ item.size }}">
-        <img src="{{ item.image.url }}" alt="{% db_trans item 'title' %}" class="w-full object-cover" loading="lazy" />
+         class="pf-item ink-card block {{ item.style_slugs }} c-{{ item.color }} s-{{ item.size }} {% if site.portfolio_cards_square %}aspect-square{% else %}aspect-[3/4]{% endif %}">
+        <img src="{{ item.image.url }}" alt="{% db_trans item 'title' %}" class="w-full h-full object-cover" loading="lazy" />
         <div class="overlay">
           <span class="font-display text-gold text-[0.65rem] uppercase tracking-widest">
             {% for s in item.styles.all %}{% db_trans s "name" %}{% if not forloop.last %} · {% endif %}{% endfor %}
@@ -79,15 +85,13 @@
         if (match) {
           shown++;
           if (el.style.display === "none") {
-            el.style.display = "";       // re-enter layout…
+            el.style.display = "";       // re-enter layout
             void el.offsetHeight;         // …force reflow so the fade-in animates
           }
           el.classList.remove("pf-hide");
         } else {
           el.classList.add("pf-hide");   // fade + scale out
-          el._pfTimer = setTimeout(function () {
-            el.style.display = "none";    // then collapse out of the column flow
-          }, HIDE_MS);
+          el._pfTimer = setTimeout(function () { el.style.display = "none"; }, HIDE_MS);
         }
       });
       if (empty) empty.classList.toggle("hidden", shown !== 0);

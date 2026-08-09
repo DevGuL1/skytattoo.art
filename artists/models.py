@@ -25,6 +25,16 @@ class Artist(models.Model):
 
     # Social / contact
     instagram = models.URLField(blank=True)
+    instagram_username = models.CharField(
+        max_length=60,
+        blank=True,
+        help_text="Instagram handle without @, e.g. avtosailor",
+    )
+    instagram_hashtag = models.CharField(
+        max_length=60,
+        blank=True,
+        help_text="Hashtag for portfolio sync without #, e.g. avtosailor",
+    )
     facebook = models.URLField(blank=True)
     tiktok = models.URLField(blank=True)
     email = models.EmailField(blank=True)

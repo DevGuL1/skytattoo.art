@@ -45,6 +45,23 @@
     </section>
   {% endif %}
 
+  {% if gallery %}
+    <section class="dash-card">
+      {{ gallery.management_form }}
+      <div class="mb-6">
+        <h3 class="font-display text-sm uppercase tracking-widest text-neutral-300">Portfolio Gallery</h3>
+        <p class="text-xs text-neutral-600 mt-1">Upload sub-images for the public slider and popup gallery. Up to 20 images per portfolio item.</p>
+      </div>
+      <div class="grid lg:grid-cols-2 gap-5">
+        {% for image_form in gallery.forms %}
+          <div class="border border-neutral-900 rounded-md p-4">
+            {% include "dashboard/_fields.html" with form=image_form %}
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
   <div class="flex justify-between gap-3">
     <a href="{{ cancel_url|default:'../' }}" class="btn-danger">Cancel</a>
     <button class="btn-primary">{{ submit_label|default:"Save" }}</button>

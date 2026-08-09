@@ -67,6 +67,7 @@ SECTION_BY_VIEW = {
     "static_string_list": "strings",
     "static_string_create": "strings",
     "static_string_edit": "strings",
+    "instagram_checker": "instagram",
 }
 
 
@@ -158,7 +159,7 @@ def _settings_page(request, template, title, form_specs):
 def home_settings(request):
     return _settings_page(
         request, "dashboard/settings_home.html", "Homepage",
-        [("hero", f.HeroForm), ("sections", f.HomeSectionsForm)],
+        [("hero", f.HeroForm), ("sections", f.HomeSectionsForm), ("portfolio", f.PortfolioDisplayForm)],
     )
 
 
@@ -253,13 +254,21 @@ def portfolio_list(request):
 @staff_required
 def portfolio_edit(request, pk=None):
     item = get_object_or_404(PortfolioItem, pk=pk) if pk else PortfolioItem()
-    form = f.PortfolioItemForm(request.POST or None, request.FILES or None, instance=item)
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        messages.success(request, "Portfolio item saved.")
-        return redirect("dashboard:portfolio_list")
+    if request.method == "POST":
+        form = f.PortfolioItemForm(request.POST, request.FILES, instance=item)
+        gallery = f.PortfolioImageFormSet(request.POST, request.FILES, instance=item)
+        if form.is_valid() and gallery.is_valid():
+            obj = form.save()
+            gallery.instance = obj
+            gallery.save()
+            messages.success(request, "Portfolio item saved.")
+            return redirect("dashboard:portfolio_list")
+        messages.error(request, "Please correct the errors below.")
+    else:
+        form = f.PortfolioItemForm(instance=item)
+        gallery = f.PortfolioImageFormSet(instance=item)
     return dash_render(request, "dashboard/portfolio_form.html",
-                       {"form": form, "item": item if pk else None,
+                       {"form": form, "gallery": gallery, "item": item if pk else None,
                         "cancel_url": reverse("dashboard:portfolio_list"),
                         "submit_label": "Save portfolio item"})
 
@@ -466,3 +475,88 @@ def static_string_delete(request, pk):
         string_obj.delete()
         messages.success(request, "Static string translation deleted.")
     return redirect("dashboard:static_string_list")
+
+
+# ---------------------------------------------------------------------------
+# Instagram Checker & Sync Module
+# ---------------------------------------------------------------------------
+@staff_required
+def instagram_checker(request):
+    from dashboard.models import InstagramSyncConfig, InstagramSyncLog
+    from portfolio.services.instagram_checker import InstagramCheckerService
+
+    config = InstagramSyncConfig.get_solo()
+    config_form = f.InstagramSyncConfigForm(request.POST or None, instance=config)
+
+    if request.method == "POST":
+        if "save_config" in request.POST:
+            if config_form.is_valid():
+                cfg = config_form.save()
+                site = SiteSetting.objects.first()
+                if site:
+                    if cfg.instagram_account_url:
+                        site.instagram = cfg.instagram_account_url
+                    if cfg.facebook_page_url:
+                        site.facebook = cfg.facebook_page_url
+                    site.save()
+                messages.success(request, "Instagram & Facebook სინქრონიზაციის პარამეტრები შენახულია.")
+                return redirect("dashboard:instagram_checker")
+        elif "save_artist_tags" in request.POST:
+            for artist in Artist.objects.filter(is_active=True):
+                ht_key = f"artist_tag_{artist.pk}"
+                un_key = f"artist_username_{artist.pk}"
+                if ht_key in request.POST:
+                    artist.instagram_hashtag = request.POST[ht_key].strip().lstrip("#")
+                if un_key in request.POST:
+                    artist.instagram_username = request.POST[un_key].strip().lstrip("@")
+                artist.save()
+            messages.success(request, "არტისტების Instagram ჰეშტეგები და Username-ები შენახულია.")
+            return redirect("dashboard:instagram_checker")
+        elif "import_post" in request.POST:
+            post_url = request.POST.get("post_url", "").strip()
+            image_url = request.POST.get("image_url", "").strip()
+            caption = request.POST.get("caption", "").strip()
+            source = request.POST.get("source", "instagram").strip()
+            success, msg = InstagramCheckerService.import_single_post_url(post_url=post_url, image_url=image_url, caption=caption, source=source)
+            if success:
+                messages.success(request, msg)
+            else:
+                messages.error(request, msg)
+            return redirect("dashboard:instagram_checker")
+
+    from django.db.models import Q
+    logs = InstagramSyncLog.objects.all()[:15]
+    synced_items = PortfolioItem.objects.filter(
+        Q(is_from_instagram=True) | Q(is_from_facebook=True)
+    ).select_related("artist")[:30]
+    artists_with_tags = Artist.objects.filter(is_active=True)
+
+    return dash_render(
+        request,
+        "dashboard/instagram_checker.html",
+        {
+            "config": config,
+            "config_form": config_form,
+            "logs": logs,
+            "synced_items": synced_items,
+            "artists_with_tags": artists_with_tags,
+        },
+    )
+
+
+@staff_required
+def instagram_sync_now(request):
+    from portfolio.services.instagram_checker import InstagramCheckerService
+
+    if request.method == "POST":
+        res = InstagramCheckerService.run_full_sync()
+        if res.get("success"):
+            messages.success(
+                request,
+                f"Instagram შემოწმება დასრულდა! წამოღებულია {res['posts_fetched']} პოსტი, შეიქმნა {res['items_created']} ახალი ნამუშევარი."
+            )
+        else:
+            messages.error(request, f"შემოწმების შეცდომა: {res.get('details')}")
+
+    return redirect("dashboard:instagram_checker")
+

@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from artists.models import Artist, Reel, SocialPost
 from core.models import SiteSetting, StudioValue
-from portfolio.models import PortfolioItem, TattooStyle
+from portfolio.models import PortfolioImage, PortfolioItem, TattooStyle
 
 # Gothic palette
 INK = (10, 10, 10)
@@ -79,6 +79,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Clearing existing demo content…")
         PortfolioItem.objects.all().delete()
+        PortfolioImage.objects.all().delete()
         Reel.objects.all().delete()
         Artist.objects.all().delete()
         TattooStyle.objects.all().delete()
@@ -123,6 +124,10 @@ class Command(BaseCommand):
             "Book a consultation with one of our artists and let's design something eternal."
         )
         site.cta_band_label = "Book Appointment"
+        site.show_portfolio_style_filters = True
+        site.show_portfolio_color_filters = False
+        site.show_portfolio_size_filters = False
+        site.portfolio_cards_square = True
         site.about_story = (
             "Skytattoo.art is a gothic tattoo studio where darkness and craft meet skin. "
             "Founded in 2016 on a love of blackwork, fine-line realism and the macabre, our "
@@ -229,6 +234,14 @@ class Command(BaseCommand):
             # Bias each artist's work toward their own styles.
             chosen = list({*chosen, *list(artist.styles.all())[:1]})
             item.styles.set(chosen)
+            for j in range(3):
+                gallery = PortfolioImage(item=item, caption=f"{title} detail {j + 1}", order=j)
+                gallery.image.save(
+                    f"work_{i}_detail_{j + 1}.jpg",
+                    _placeholder(f"{title.split()[0]} {j + 1}", 900, 1100, accent=accent, seed=i * 31 + j),
+                    save=False,
+                )
+                gallery.save()
             created += 1
         self.stdout.write(f"Created {created} portfolio items.")
 

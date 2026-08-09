@@ -5,12 +5,37 @@
 {% block meta_description %}{% db_trans item "description" as desc %}{{ desc|default:item.title }}{% endblock %}
 
 {% block content %}
-<section class="max-w-6xl mx-auto px-5 pt-32 pb-24">
+<section class="max-w-7xl mx-auto px-5 pt-32 pb-24">
   <a href="{% url 'portfolio:list' %}" class="text-sm text-neutral-500 hover:text-gold">← {% static_trans "Back to portfolio" %}</a>
 
-  <div class="grid lg:grid-cols-2 gap-12 mt-6">
-    <div class="ink-card">
-      <img src="{{ item.image.url }}" alt="{% db_trans item 'title' %}" class="w-full object-cover" />
+  <div class="grid lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] gap-10 mt-6">
+    <div>
+      <div class="portfolio-slider ink-card" data-portfolio-slider>
+        <div class="portfolio-slide-track">
+          <button type="button" class="portfolio-slide is-active" data-gallery-index="0">
+            <img src="{{ item.image.url }}" alt="{% db_trans item 'title' %}" class="w-full h-full object-cover" />
+          </button>
+          {% for image in gallery_images %}
+            <button type="button" class="portfolio-slide" data-gallery-index="{{ forloop.counter }}">
+              <img src="{{ image.image.url }}" alt="{{ image.caption|default:item.title }}" class="w-full h-full object-cover" loading="lazy" />
+            </button>
+          {% endfor %}
+        </div>
+
+        <button type="button" class="portfolio-nav portfolio-prev" data-slide-prev aria-label="Previous image">‹</button>
+        <button type="button" class="portfolio-nav portfolio-next" data-slide-next aria-label="Next image">›</button>
+      </div>
+
+      <div class="portfolio-thumbs mt-4" data-gallery-thumbs>
+        <button type="button" class="portfolio-thumb is-active" data-gallery-index="0">
+          <img src="{{ item.image.url }}" alt="" />
+        </button>
+        {% for image in gallery_images %}
+          <button type="button" class="portfolio-thumb" data-gallery-index="{{ forloop.counter }}">
+            <img src="{{ image.image.url }}" alt="" loading="lazy" />
+          </button>
+        {% endfor %}
+      </div>
     </div>
 
     <div class="flex flex-col justify-center">
@@ -19,7 +44,7 @@
           <a href="{% url 'portfolio:list' %}#{{ s.slug }}" class="filter-chip">{% db_trans s "name" %}</a>
         {% endfor %}
       </div>
-      <h1 class="font-gothic text-5xl text-neutral-100">{% db_trans item "title" %}</h1>
+      <h1 class="font-gothic text-5xl md:text-6xl text-neutral-100">{% db_trans item "title" %}</h1>
 
       {% if item.artist %}
         <a href="{{ item.artist.get_absolute_url }}" class="inline-flex items-center gap-3 mt-6 group w-fit">
@@ -57,4 +82,74 @@
   </div>
   {% endif %}
 </section>
+
+<div class="portfolio-lightbox hidden" data-portfolio-lightbox aria-hidden="true">
+  <button type="button" class="portfolio-lightbox-close" data-lightbox-close aria-label="Close">×</button>
+  <button type="button" class="portfolio-lightbox-nav portfolio-lightbox-prev" data-lightbox-prev aria-label="Previous">‹</button>
+  <img src="" alt="" data-lightbox-image />
+  <button type="button" class="portfolio-lightbox-nav portfolio-lightbox-next" data-lightbox-next aria-label="Next">›</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll(".portfolio-slide"));
+    if (!slides.length) return;
+    var thumbs = Array.prototype.slice.call(document.querySelectorAll(".portfolio-thumb"));
+    var prev = document.querySelector("[data-slide-prev]");
+    var next = document.querySelector("[data-slide-next]");
+    var lightbox = document.querySelector("[data-portfolio-lightbox]");
+    var lightboxImage = document.querySelector("[data-lightbox-image]");
+    var closeBtn = document.querySelector("[data-lightbox-close]");
+    var lightPrev = document.querySelector("[data-lightbox-prev]");
+    var lightNext = document.querySelector("[data-lightbox-next]");
+    var active = 0;
+
+    function show(index) {
+      active = (index + slides.length) % slides.length;
+      slides.forEach(function (slide, i) { slide.classList.toggle("is-active", i === active); });
+      thumbs.forEach(function (thumb, i) { thumb.classList.toggle("is-active", i === active); });
+    }
+
+    function openLightbox(index) {
+      show(index);
+      var img = slides[active].querySelector("img");
+      if (!img || !lightbox || !lightboxImage) return;
+      lightboxImage.src = img.currentSrc || img.src;
+      lightboxImage.alt = img.alt || "";
+      lightbox.classList.remove("hidden");
+      lightbox.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeLightbox() {
+      if (!lightbox) return;
+      lightbox.classList.add("hidden");
+      lightbox.setAttribute("aria-hidden", "true");
+      lightboxImage.removeAttribute("src");
+      document.body.style.overflow = "";
+    }
+
+    function step(delta) {
+      show(active + delta);
+      if (lightbox && !lightbox.classList.contains("hidden")) openLightbox(active);
+    }
+
+    slides.forEach(function (slide, i) { slide.addEventListener("click", function () { openLightbox(i); }); });
+    thumbs.forEach(function (thumb, i) { thumb.addEventListener("click", function () { show(i); }); });
+    if (prev) prev.addEventListener("click", function () { step(-1); });
+    if (next) next.addEventListener("click", function () { step(1); });
+    if (lightPrev) lightPrev.addEventListener("click", function () { step(-1); });
+    if (lightNext) lightNext.addEventListener("click", function () { step(1); });
+    if (closeBtn) closeBtn.addEventListener("click", closeLightbox);
+    if (lightbox) lightbox.addEventListener("click", function (event) { if (event.target === lightbox) closeLightbox(); });
+    document.addEventListener("keydown", function (event) {
+      if (!lightbox || lightbox.classList.contains("hidden")) return;
+      if (event.key === "Escape") closeLightbox();
+      if (event.key === "ArrowLeft") step(-1);
+      if (event.key === "ArrowRight") step(1);
+    });
+  })();
+</script>
 {% endblock %}

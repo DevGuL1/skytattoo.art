@@ -65,6 +65,28 @@ class PortfolioItem(models.Model):
     is_featured = models.BooleanField(
         default=False, help_text="Show on the homepage featured grid."
     )
+    class Source(models.TextChoices):
+        MANUAL = "manual", "Manual Upload"
+        INSTAGRAM = "instagram", "Instagram"
+        FACEBOOK = "facebook", "Facebook"
+
+    source = models.CharField(
+        max_length=20, choices=Source.choices, default=Source.MANUAL
+    )
+    is_from_instagram = models.BooleanField(default=False)
+    instagram_post_id = models.CharField(
+        max_length=100, blank=True, null=True, unique=True,
+        help_text="Unique ID of synced Instagram post to prevent duplicates."
+    )
+    instagram_permalink = models.URLField(blank=True, help_text="Direct link to Instagram post.")
+
+    is_from_facebook = models.BooleanField(default=False)
+    facebook_post_id = models.CharField(
+        max_length=100, blank=True, null=True, unique=True,
+        help_text="Unique ID of synced Facebook post to prevent duplicates."
+    )
+    facebook_permalink = models.URLField(blank=True, help_text="Direct link to Facebook post.")
+
     order = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -86,3 +108,25 @@ class PortfolioItem(models.Model):
     def style_slugs(self):
         """Space-separated style slugs, used by the Isotope filter markup."""
         return " ".join(self.styles.values_list("slug", flat=True))
+
+
+class PortfolioImage(models.Model):
+    """Additional gallery image for a portfolio item."""
+
+    item = models.ForeignKey(
+        PortfolioItem,
+        on_delete=models.CASCADE,
+        related_name="gallery_images",
+    )
+    image = models.ImageField(upload_to="portfolio/gallery/")
+    caption = models.CharField(max_length=160, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["order", "id"]
+        verbose_name = "Portfolio gallery image"
+        verbose_name_plural = "Portfolio gallery images"
+
+    def __str__(self):
+        return self.caption or f"{self.item.title} image #{self.pk}"

@@ -1,7 +1,12 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import PortfolioItem, TattooStyle
+from .models import PortfolioImage, PortfolioItem, TattooStyle
+
+
+class PortfolioImageInline(admin.TabularInline):
+    model = PortfolioImage
+    extra = 3
 
 
 @admin.register(TattooStyle)
@@ -31,6 +36,7 @@ class PortfolioItemAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     autocomplete_fields = ("artist",)
     filter_horizontal = ("styles",)
+    inlines = [PortfolioImageInline]
 
     @admin.display(description="")
     def thumb(self, obj):

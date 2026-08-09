@@ -60,4 +60,8 @@ urlpatterns = [
     path("strings/new/", views.static_string_edit, name="static_string_create"),
     path("strings/<int:pk>/", views.static_string_edit, name="static_string_edit"),
     path("strings/<int:pk>/delete/", views.static_string_delete, name="static_string_delete"),
+
+    # Instagram Sync & Checker
+    path("instagram/", views.instagram_checker, name="instagram_checker"),
+    path("instagram/sync/", views.instagram_sync_now, name="instagram_sync_now"),
 ]

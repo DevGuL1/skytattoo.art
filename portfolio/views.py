@@ -19,9 +19,10 @@ def portfolio_list(request):
 
 def portfolio_detail(request, slug):
     item = get_object_or_404(
-        PortfolioItem.objects.select_related("artist").prefetch_related("styles"),
+        PortfolioItem.objects.select_related("artist").prefetch_related("styles", "gallery_images"),
         slug=slug,
     )
+    gallery_images = item.gallery_images.filter(is_active=True)
     related = (
         PortfolioItem.objects.filter(styles__in=item.styles.all())
         .exclude(pk=item.pk)
@@ -30,5 +31,5 @@ def portfolio_detail(request, slug):
     return render(
         request,
         "portfolio/detail.html",
-        {"item": item, "related": related},
+        {"item": item, "gallery_images": gallery_images, "related": related},
     )
