@@ -470,27 +470,6 @@ class InstagramCheckerService:
             except Exception as e:
                 print(f"Instagram Session Cookie fetch error: {e}")
 
-        # 2. Dynamic Showcase Collection mapped to configured target
-        if not results:
-            CURATED_WORKS = [
-                {"url": "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=800&q=80", "title": "Gothic Blackwork Sleeve", "tag": "avtosailor"},
-                {"url": "https://images.unsplash.com/photo-1562962230-16e4623d36e6?w=800&q=80", "title": "Ornate Dark Realism Backpiece", "tag": "damiencross"},
-                {"url": "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?w=800&q=80", "title": "Minimalist Gothic Fine Line", "tag": "ilsekroft"},
-                {"url": "https://images.unsplash.com/photo-1550537687-c91072c4792d?w=800&q=80", "title": "Surrealist Chiaroscuro Tattoo", "tag": "rookhalloran"},
-                {"url": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80", "title": "Gothic Lettering & Skull Composition", "tag": "avtosailor"},
-                {"url": "https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&q=80", "title": "Micro-realism Dark Portrait", "tag": "rookhalloran"},
-                {"url": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80", "title": "Dark Ornamental Chest Piece", "tag": "damiencross"},
-            ]
-            for idx in range(count):
-                art = CURATED_WORKS[idx % len(CURATED_WORKS)]
-                post_num = idx + 1
-                results.append({
-                    "id": f"ig_{target}_{post_num:03d}",
-                    "image_url": art["url"],
-                    "caption": f"{art['title']} #{art['tag']} @{target} #skytattoo #tattooart",
-                    "permalink": f"https://www.instagram.com/{target}/",
-                })
-
         return results[:count]
 
     @staticmethod
@@ -540,27 +519,6 @@ class InstagramCheckerService:
                             })
             except Exception as e:
                 print(f"Meta Graph API Facebook error: {e}")
-
-        if not results:
-            CURATED_WORKS = [
-                {"url": "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=800&q=80", "title": "Gothic Blackwork Sleeve", "tag": "avtosailor"},
-                {"url": "https://images.unsplash.com/photo-1562962230-16e4623d36e6?w=800&q=80", "title": "Ornate Dark Realism Backpiece", "tag": "damiencross"},
-                {"url": "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?w=800&q=80", "title": "Minimalist Gothic Fine Line", "tag": "ilsekroft"},
-                {"url": "https://images.unsplash.com/photo-1550537687-c91072c4792d?w=800&q=80", "title": "Surrealist Chiaroscuro Tattoo", "tag": "rookhalloran"},
-                {"url": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80", "title": "Gothic Lettering & Skull Composition", "tag": "avtosailor"},
-                {"url": "https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&q=80", "title": "Micro-realism Dark Portrait", "tag": "rookhalloran"},
-                {"url": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80", "title": "Dark Ornamental Chest Piece", "tag": "damiencross"},
-            ]
-
-            for idx in range(count):
-                art = CURATED_WORKS[idx % len(CURATED_WORKS)]
-                post_num = idx + 1
-                results.append({
-                    "id": f"fb_{target}_{post_num:03d}",
-                    "image_url": art["url"],
-                    "caption": f"{art['title']} Official Facebook Post #{art['tag']} #{target}",
-                    "permalink": f"https://www.facebook.com/{target}/posts/{post_num:03d}",
-                })
 
         return results[:count]
 
