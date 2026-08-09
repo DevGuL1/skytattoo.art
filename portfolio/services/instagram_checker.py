@@ -516,24 +516,58 @@ class InstagramCheckerService:
                 except Exception as ex_acc:
                     print(f"Page account resolution info: {ex_acc}")
 
-                # Query Page posts with Page Token (Paginated)
-                next_url = f"https://graph.facebook.com/v19.0/{target_page_id}/posts?fields=id,message,full_picture,permalink_url,created_time&limit=100&access_token={page_token}"
-                while next_url and len(results) < count:
-                    req = urllib.request.Request(next_url)
-                    with urllib.request.urlopen(req, timeout=10) as resp:
-                        data = json.loads(resp.read().decode('utf-8'))
-                        for item in data.get("data", []):
-                            img_url = item.get("full_picture")
-                            if img_url:
-                                results.append({
-                                    "id": item.get("id"),
-                                    "image_url": img_url,
-                                    "caption": item.get("message") or f"Facebook Post #{target}",
-                                    "permalink": item.get("permalink_url") or f"https://www.facebook.com/{target}/",
-                                })
-                                if len(results) >= count:
-                                    break
-                        next_url = data.get("paging", {}).get("next")
+                # 1. Query Facebook Photos Tab (&sk=photos / uploaded photos)
+                photos_dict = {}
+                next_url = f"https://graph.facebook.com/v19.0/{target_page_id}/photos?type=uploaded&fields=id,name,images,link,created_time&limit=100&access_token={page_token}"
+                while next_url and len(photos_dict) < count:
+                    try:
+                        req = urllib.request.Request(next_url)
+                        with urllib.request.urlopen(req, timeout=10) as resp:
+                            data = json.loads(resp.read().decode('utf-8'))
+                            for item in data.get("data", []):
+                                imgs = item.get("images", [])
+                                img_url = imgs[0].get("source") if imgs else None
+                                item_id = item.get("id")
+                                if img_url and item_id:
+                                    photos_dict[item_id] = {
+                                        "id": item_id,
+                                        "image_url": img_url,
+                                        "caption": item.get("name") or f"Facebook Photo #{target}",
+                                        "permalink": item.get("link") or f"https://www.facebook.com/{target}/",
+                                    }
+                                    if len(photos_dict) >= count:
+                                        break
+                            next_url = data.get("paging", {}).get("next")
+                    except Exception as ex_ph:
+                        print(f"Facebook Photos tab fetch info: {ex_ph}")
+                        break
+
+                # 2. Query Facebook Feed Posts for any additional photos
+                if len(photos_dict) < count:
+                    next_url = f"https://graph.facebook.com/v19.0/{target_page_id}/posts?fields=id,message,full_picture,permalink_url,created_time&limit=100&access_token={page_token}"
+                    while next_url and len(photos_dict) < count:
+                        try:
+                            req = urllib.request.Request(next_url)
+                            with urllib.request.urlopen(req, timeout=10) as resp:
+                                data = json.loads(resp.read().decode('utf-8'))
+                                for item in data.get("data", []):
+                                    img_url = item.get("full_picture")
+                                    item_id = item.get("id")
+                                    if img_url and item_id and item_id not in photos_dict:
+                                        photos_dict[item_id] = {
+                                            "id": item_id,
+                                            "image_url": img_url,
+                                            "caption": item.get("message") or f"Facebook Post #{target}",
+                                            "permalink": item.get("permalink_url") or f"https://www.facebook.com/{target}/",
+                                        }
+                                        if len(photos_dict) >= count:
+                                            break
+                                next_url = data.get("paging", {}).get("next")
+                        except Exception as ex_post:
+                            print(f"Facebook Feed posts fetch info: {ex_post}")
+                            break
+
+                results = list(photos_dict.values())
             except Exception as e:
                 print(f"Meta Graph API Facebook error: {e}")
 
