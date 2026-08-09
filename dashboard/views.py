@@ -561,7 +561,7 @@ def instagram_sync_now(request):
     from portfolio.services.instagram_checker import InstagramCheckerService
 
     if request.method == "POST":
-        res = InstagramCheckerService.run_full_sync()
+        res = InstagramCheckerService.run_full_sync(max_posts=250)
         if res.get("success"):
             messages.success(
                 request,

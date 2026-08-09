@@ -119,7 +119,7 @@ class InstagramCheckerService:
             return False, f"შეცდომა შენახვისას: {e}"
 
     @staticmethod
-    def run_full_sync(max_posts=50):
+    def run_full_sync(max_posts=250):
         """Run full sync for Instagram & Facebook using URLs configured by the admin in Dashboard."""
         config = InstagramSyncConfig.get_solo()
         log_messages = []
@@ -171,7 +171,7 @@ class InstagramCheckerService:
         }
 
     @staticmethod
-    def sync_instagram_studio(max_posts=50):
+    def sync_instagram_studio(max_posts=250):
         """Fetch latest posts from admin-configured Instagram Account URL."""
         config = InstagramSyncConfig.get_solo()
         site_setting = SiteSetting.objects.first()
@@ -236,7 +236,7 @@ class InstagramCheckerService:
         return len(posts), created_count, f"Instagram (@{handle}): წამოღებულია {len(posts)} პოსტი, შეიქმნა {created_count} ნამუშევარი."
 
     @staticmethod
-    def sync_facebook_studio(max_posts=50):
+    def sync_facebook_studio(max_posts=250):
         """Fetch latest photos/posts from admin-configured Facebook Page URL."""
         config = InstagramSyncConfig.get_solo()
         site_setting = SiteSetting.objects.first()
@@ -516,20 +516,24 @@ class InstagramCheckerService:
                 except Exception as ex_acc:
                     print(f"Page account resolution info: {ex_acc}")
 
-                # Query Page posts with Page Token
-                posts_url = f"https://graph.facebook.com/v19.0/{target_page_id}/posts?fields=id,message,full_picture,permalink_url,created_time&access_token={page_token}"
-                req = urllib.request.Request(posts_url)
-                with urllib.request.urlopen(req, timeout=10) as resp:
-                    data = json.loads(resp.read().decode('utf-8'))
-                    for item in data.get("data", []):
-                        img_url = item.get("full_picture")
-                        if img_url:
-                            results.append({
-                                "id": item.get("id"),
-                                "image_url": img_url,
-                                "caption": item.get("message") or f"Facebook Post #{target}",
-                                "permalink": item.get("permalink_url") or f"https://www.facebook.com/{target}/",
-                            })
+                # Query Page posts with Page Token (Paginated)
+                next_url = f"https://graph.facebook.com/v19.0/{target_page_id}/posts?fields=id,message,full_picture,permalink_url,created_time&limit=100&access_token={page_token}"
+                while next_url and len(results) < count:
+                    req = urllib.request.Request(next_url)
+                    with urllib.request.urlopen(req, timeout=10) as resp:
+                        data = json.loads(resp.read().decode('utf-8'))
+                        for item in data.get("data", []):
+                            img_url = item.get("full_picture")
+                            if img_url:
+                                results.append({
+                                    "id": item.get("id"),
+                                    "image_url": img_url,
+                                    "caption": item.get("message") or f"Facebook Post #{target}",
+                                    "permalink": item.get("permalink_url") or f"https://www.facebook.com/{target}/",
+                                })
+                                if len(results) >= count:
+                                    break
+                        next_url = data.get("paging", {}).get("next")
             except Exception as e:
                 print(f"Meta Graph API Facebook error: {e}")
 
