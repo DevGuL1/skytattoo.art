@@ -27,15 +27,20 @@ class InstagramCheckerService:
         Examples:
         - https://www.instagram.com/tattooskystudio/ -> tattooskystudio
         - https://facebook.com/my_page -> my_page
+        - https://facebook.com/profile.php?id=971476806039423 -> 971476806039423
         - @my_page -> my_page
         """
         if not url_or_handle:
             return default
         clean = url_or_handle.strip().rstrip('/')
         if '://' in clean or '/' in clean:
-            path = urllib.parse.urlparse(clean).path
+            parsed = urllib.parse.urlparse(clean)
+            qs = urllib.parse.parse_qs(parsed.query)
+            if 'id' in qs and qs['id']:
+                return qs['id'][0]
+            path = parsed.path
             parts = [p for p in path.split('/') if p]
-            if parts:
+            if parts and parts[-1] not in ['profile.php', 'index.php']:
                 return parts[-1].lstrip('@')
         return clean.lstrip('@')
 
@@ -495,11 +500,19 @@ class InstagramCheckerService:
                     with urllib.request.urlopen(req, timeout=8) as resp:
                         acc_data = json.loads(resp.read().decode('utf-8'))
                         pages = acc_data.get("data", [])
+                        matched = None
                         for p in pages:
                             if p.get("id") == fb_page_id or target.lower() in p.get("name", "").lower():
-                                page_token = p.get("access_token", fb_token)
-                                target_page_id = p.get("id", fb_page_id)
+                                matched = p
                                 break
+
+                        if not matched and pages:
+                            # Auto-match page with 'tattoo' or 'sky' in name, or fallback to first page
+                            matched = next((p for p in pages if 'tattoo' in p.get('name', '').lower() or 'sky' in p.get('name', '').lower()), pages[0])
+
+                        if matched:
+                            page_token = matched.get("access_token", fb_token)
+                            target_page_id = matched.get("id", fb_page_id)
                 except Exception as ex_acc:
                     print(f"Page account resolution info: {ex_acc}")
 
